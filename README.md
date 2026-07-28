@@ -1,27 +1,10 @@
 # Constraint Programming for GAMA
 
-A GAMA plugin exposing [Choco-solver](https://choco-solver.org) 6 to GAML: declare decision variables, post constraints over them, and let a constraint solver find assignments that satisfy them — optionally the best one according to an objective.
+A GAMA plugin exposing [Choco-solver](https://choco-solver.org) 6 to GAML: declare decision variables, post constraints over them, and let a constraint solver find assignments that satisfy them, or the best such assignment according to an objective.
 
 The GAML API mirrors the shape of the Choco Java API, so anything written for Choco translates line by line, and the Choco documentation applies directly.
 
----
-
-## Requirements
-
-- GAMA 2026-06 or later (needs the `gama.api` module and JDK 25)
-- `choco-solver-6.0.1.jar`, in `lib/` and declared in `Bundle-ClassPath`
-
-Choco does not bundle its dependencies. Beyond the solver jar itself:
-
-| Library | Status | Used by |
-|---|---|---|
-| `trove4j` | **required** | referenced by `Model` itself — without it, creating a problem throws `NoClassDefFoundError` |
-| `dk.brics.automaton` | optional | `regular` / `costRegular` constraints (not exposed by this plugin yet) |
-| `org.kohsuke.args4j` | optional | command-line configuration of the solver |
-| `org.ehcache:sizeof` | optional | `Model.getEstimatedMemory()` only |
-| `org.jgrapht` | already provided | exported by `gama.dependencies` — do **not** add a second copy |
-
----
+This version is developed for GAMA 2026-06 and above.
 
 ## The four steps
 
@@ -58,7 +41,7 @@ global {
 
 ### Building a constraint is not posting it
 
-`all_different(queens)` builds an object representing a *relation*. `post` turns it into an *assertion*: "this relation holds in every solution". The two are separate because an unposted constraint can be reasoned about rather than enforced — which is what `reify`, `or_all`, `if_then` and `opposite` need.
+`all_different(queens)` builds an object representing a *relation*. `post` turns it into an *assertion*: "this relation holds in every solution". The two are separate because an unposted constraint can be reasoned about rather than enforced, which is what `reify`, `or_all`, `if_then` and `opposite` need.
 
 ```gaml
 // hard: the relation must hold
@@ -69,7 +52,7 @@ pb_variable on_time <- reify(arithm(end_last, "<=", 17));
 solution best <- maximize(p, on_time);
 ```
 
-> **Careful:** a constraint that is built and never posted is silently ignored. `do all_different(q);` compiles, runs, and does nothing — the missing `post` is not reported.
+> **Careful:** a constraint that is built and never posted is silently ignored. `do all_different(q);` compiles, runs, and does nothing. The missing `post` is not reported.
 
 ---
 
@@ -137,7 +120,7 @@ problem p <- problem("my_problem");
 | `set_var(problem, string, list<int> mandatory, list<int> possible)` | `pb_variable` | set variable |
 | `variable_named(problem, string)` | `pb_variable` | look-up by name, `nil` if absent |
 
-Bounds are floats, so `#infinity` and `-#infinity` are accepted and clamped to the range Choco supports (±21 474 836 — it caps domains at `Integer.MAX_VALUE / 100` to keep a margin against overflow inside the propagators). Beyond 65 536 values, a domain is represented by its bounds only rather than by an enumeration: much less memory, slightly weaker propagation. That is what you want for totals and objectives.
+Bounds are floats, so `#infinity` and `-#infinity` are accepted and clamped to the range Choco supports (±21 474 836, since it caps domains at `Integer.MAX_VALUE / 100` to keep a margin against overflow inside the propagators). Beyond 65 536 values, a domain is represented by its bounds only rather than by an enumeration: much less memory, slightly weaker propagation. That is what you want for totals and objectives.
 
 ## Derived variables
 
@@ -151,10 +134,10 @@ Each of these declares a new variable and links it to its operands. Named with a
 | `arg_min_var(list<pb_variable>)` / `arg_max_var(list<pb_variable>)` | index of the smallest / largest |
 | `element_var(list<int> table, pb_variable index)` | `table[index]`, indices from 0 |
 | `mod_var(pb_variable, int divisor)` | the remainder |
-| `abs_var(pb_variable)` | absolute value — a *view*, free |
-| `neg_var(pb_variable)` | opposite — a view |
-| `offset_var(pb_variable, int)` | `x + k` — a view |
-| `scale_var(pb_variable, int)` | `x * k` — a view |
+| `abs_var(pb_variable)` | absolute value (a view, so it is free) |
+| `neg_var(pb_variable)` | opposite (a view) |
+| `offset_var(pb_variable, int)` | `x + k` (a view) |
+| `scale_var(pb_variable, int)` | `x * k` (a view) |
 
 Views cost neither a propagator nor a search decision: prefer them when they apply.
 
@@ -188,7 +171,7 @@ All of them return a `constraint`, which has to be posted to take effect.
 | `global_cardinality(list<pb_variable>, list<int> values, list<pb_variable> occurrences, bool closed)` | occurrence count per value |
 | `increasing(list<pb_variable>, int delta)` / `decreasing(…)` | monotone; `delta = 1` makes it strict |
 | `sorted(list<pb_variable>, list<pb_variable>)` | the second list is the first, sorted |
-| `lex_less` / `lex_less_eq(list<pb_variable>, list<pb_variable>)` | lexicographic order — useful to break symmetries |
+| `lex_less` / `lex_less_eq(list<pb_variable>, list<pb_variable>)` | lexicographic order, useful to break symmetries |
 | `inverse_channeling(list<pb_variable>, list<pb_variable>)` | `a[j] = i` iff `b[i] = j` |
 
 ### Routing and packing
@@ -240,8 +223,8 @@ Posting the same constraint twice is a no-op, so a constraint held in a variable
 | `minimize(problem, pb_variable objective, float within)` | best found within the budget |
 | `maximize(problem, pb_variable objective)` | |
 | `maximize(problem, pb_variable objective, float within)` | |
-| `all_solutions(problem)` | `list<solution>` — every solution |
-| `all_solutions(problem, int limit)` | `list<solution>` — at most `limit` |
+| `all_solutions(problem)` | `list<solution>`, every solution |
+| `all_solutions(problem, int limit)` | `list<solution>`, at most `limit` |
 
 `within` is a duration, so it is written in model time units: `5 #s`, `200 #ms`.
 
@@ -249,13 +232,26 @@ Posting the same constraint twice is a no-op, so a constraint held in a variable
 solution best <- minimize(p, total_cost, 20 #s);
 ```
 
+## Warm starting and resetting
+
+| Operator | Returns | |
+|---|---|---|
+| `hint_from(problem, solution)` | `int` | replays a previous solution as hints; returns how many could be applied |
+| `add_hint(pb_variable, int)` | `pb_variable` | a single hint |
+| `clear_hints(problem)` | `problem` | forget every hint |
+| `reset(problem)` | `problem` | bring the solver back to its initial state |
+
+A hint tells the search which value to try first for a variable. It **guides** the search without restricting it: hints can make a search much faster or slightly slower, but they can never make a result wrong or hide a solution. 
+
+`hint_from` matches variables **by name**, so the solution may come from a different `problem` object, typically the one built at the previous simulation step. That is what makes it usable with the rebuild-every-step pattern below. Variables of the solution with no counterpart in the target problem, and values that no longer belong to the domain, are skipped; the returned count is there to let you check that the match worked.
+
 ## Reading a solution
 
 | Operator | Returns |
 |---|---|
 | `value_of(solution, pb_variable)` | `int`, or `nil` if no solution was found |
 | `values_of(solution, list<pb_variable>)` | `list<int>`, in the same order |
-| `set_value_of(solution, pb_variable)` | `list<int>` — elements of a set variable |
+| `set_value_of(solution, pb_variable)` | `list<int>`, the elements of a set variable |
 
 ---
 
@@ -263,7 +259,23 @@ solution best <- minimize(p, total_cost, 20 #s);
 
 **A problem is mutable and shared.** It carries a propagation engine and a backtracking trail, so assigning it to another GAML variable shares it rather than copying it, and a simulation holding a live problem cannot be serialised. Build a problem, search it, drop it.
 
-**The solver keeps its state between two searches.** Searching the same problem twice resumes where the previous search stopped — which is what makes an anytime search spread over several simulation cycles possible, but also means a second `search(p)` will not return the first solution again. For independent searches, build a fresh problem.
+**The solver keeps its state between two searches.** Searching the same problem twice resumes where the previous search stopped, which is what makes an anytime search spread over several simulation cycles possible, but also means a second `search(p)` will not return the first solution again. Use `reset(p)` to start over, or build a fresh problem.
+
+**Re-solving every N steps.** The usual pattern in a simulation is to solve the same system of constraints again and again, with data that has changed in between. Constants are copied into the constraints when they are built (`scalar(vars, coeffs, "<=", 15)` captured `coeffs` and `15` for good), so changing the data means rebuilding the problem. That is almost always the right choice: building a few dozen variables and a hundred propagators is negligeable compared to the time spent in search.
+
+What is worth saving is not the construction but the search, by seeding it with the previous solution:
+
+```gaml
+solution previous <- nil;
+
+reflex replan when: every(10 #cycles) {
+    problem p <- build_problem();            // rebuilt with the current data
+    if (previous != nil) { do hint_from(p, previous); }
+    previous <- minimize(p, cost, 2 #s);
+}
+```
+
+When the data moves little from one step to the next, the previous solution is nearly feasible and the solver reaches a good incumbent within the first few nodes instead of wandering. When it moves a lot, the hints are simply poor advice and cost a little time, never correctness.
 
 **Every search is interruptible.** A stop criterion bound to the interruption of the simulation is installed for the duration of each search, so stopping or closing an experiment stops the solver. Prefer the forms with a time budget anyway: an unsatisfiable problem can otherwise keep the solver busy for a very long time.
 
@@ -288,7 +300,7 @@ loop i from: 0 to: length(worker) - 1 {
 - `table` (extension constraints), which needs `Tuples`
 - the set and graph constraint families (77 constraints), which need set and graph decision variables
 - `regular` / `costRegular`, which need automata
-- a plain `sum` constraint — use `arithm(sum_var(vars), op, value)` or `scalar` with unit coefficients
+- a plain `sum` constraint: use `arithm(sum_var(vars), op, value)` or `scalar` with unit coefficients
 - arithmetic sugar over variables (`x + y <= 10` instead of `arithm(x, "+", y, "<=", 10)`)
 - streaming enumeration: `all_solutions` materialises the whole list, there is no per-solution callback
 
@@ -300,7 +312,7 @@ In `models/Constraint Programming/`:
 
 | Model | Archetype |
 |---|---|
-| `Cryptarithm.gaml` | pure satisfaction — SEND + MORE = MONEY |
+| `Cryptarithm.gaml` | pure satisfaction, SEND + MORE = MONEY |
 | `N-Queens.gaml` | placement, and enumeration of several solutions |
 | `Knapsack.gaml` | selection under a budget |
 | `Graph Colouring.gaml` | partitioning, with symmetry breaking |

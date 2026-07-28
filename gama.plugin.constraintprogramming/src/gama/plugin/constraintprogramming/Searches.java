@@ -2,6 +2,7 @@ package gama.plugin.constraintprogramming;
 
 import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.util.criteria.Criterion;
 
 import gama.annotations.doc;
@@ -214,6 +215,101 @@ public class Searches {
 	public static IList<GamaSolution> allSolutions(final IScope scope, final GamaProblem problem, final int limit)
 			throws GamaRuntimeException {
 		return enumerate(scope, problem, limit);
+	}
+
+	// ---------------------------------------------------------------------------------------------------------------
+	// Warm starting and resetting
+	// ---------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * Replays a previous solution as search hints.
+	 */
+	@operator (
+			value = "hint_from",
+			category = { CPUtils.CATEGORY },
+			concept = { IConcept.OPTIMIZATION })
+	@doc (
+			value = "Tells the solver to try, for each variable of the problem, the value it took in the solution given as second operand, and returns the number of hints that could be applied.",
+			comment = "Variables are matched by name, so the solution may come from another problem, typically the one built at the previous simulation step. A hint only guides the search: it can never make a result wrong, only faster or slower. Variables of the solution that have no counterpart by name in the problem are skipped, which is what the returned count lets you check.",
+			examples = { @example (
+					value = "int applied <- hint_from(p, previous_solution);",
+					isExecutable = false) },
+			see = { "add_hint", "clear_hints", "minimize" })
+	@no_test
+	public static int hintFrom(final IScope scope, final GamaProblem problem, final GamaSolution solution)
+			throws GamaRuntimeException {
+		if (problem == null) throw GamaRuntimeException.error("Trying to hint a nil problem", scope);
+		if (solution == null || !solution.exists()) return 0;
+		int applied = 0;
+		final Solver solver = problem.getSolver();
+		for (final GamaVariable source : solution.getProblem().getVariables()) {
+			final GamaVariable target = problem.getVariable(source.getVariableName());
+			if (target == null || !(target.getVariable() instanceof IntVar iv)) { continue; }
+			final Integer value = solution.valueOf(scope, source);
+			if (value == null || !iv.contains(value)) { continue; }
+			solver.addHint(iv, value);
+			applied++;
+		}
+		return applied;
+	}
+
+	/**
+	 * Adds a single hint.
+	 */
+	@operator (
+			value = "add_hint",
+			category = { CPUtils.CATEGORY },
+			concept = { IConcept.OPTIMIZATION })
+	@doc (
+			value = "Tells the solver to try this value first for this variable, and returns the variable. Only guides the search, never restricts the solutions.",
+			examples = { @example (
+					value = "do add_hint(slot_of_worker_3, 5);",
+					isExecutable = false) },
+			see = { "hint_from", "clear_hints" })
+	@no_test
+	public static GamaVariable addHint(final IScope scope, final GamaVariable variable, final int value)
+			throws GamaRuntimeException {
+		if (variable == null) throw GamaRuntimeException.error("Trying to hint a nil variable", scope);
+		variable.getProblem().getSolver().addHint(variable.asIntVar(scope), value);
+		return variable;
+	}
+
+	/**
+	 * Removes every hint.
+	 */
+	@operator (
+			value = "clear_hints",
+			category = { CPUtils.CATEGORY },
+			concept = { IConcept.OPTIMIZATION })
+	@doc (
+			value = "Removes every hint given to the solver of this problem, and returns the problem.",
+			see = { "hint_from", "add_hint" })
+	@no_test
+	public static GamaProblem clearHints(final IScope scope, final GamaProblem problem) throws GamaRuntimeException {
+		if (problem == null) throw GamaRuntimeException.error("Trying to clear the hints of a nil problem", scope);
+		problem.getSolver().removeHints();
+		return problem;
+	}
+
+	/**
+	 * Brings a solver back to its initial state.
+	 */
+	@operator (
+			value = "reset",
+			category = { CPUtils.CATEGORY },
+			concept = { IConcept.OPTIMIZATION })
+	@doc (
+			value = "Brings the solver of this problem back to its initial state and returns the problem. Without it, searching the same problem twice resumes the previous search instead of starting a new one.",
+			comment = "Variables, constraints and hints are kept; only the state of the search is undone.",
+			examples = { @example (
+					value = "do reset(p);",
+					isExecutable = false) },
+			see = { "search", "clear_hints" })
+	@no_test
+	public static GamaProblem reset(final IScope scope, final GamaProblem problem) throws GamaRuntimeException {
+		if (problem == null) throw GamaRuntimeException.error("Trying to reset a nil problem", scope);
+		problem.getSolver().reset();
+		return problem;
 	}
 
 	/**
