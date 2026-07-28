@@ -1,6 +1,6 @@
 /**
 * Name: Knapsack
-* Author: gama.plugin.constraintprogramming
+* Author: Baptiste Lesquoy
 * Description: Selecting a subset of items whose total value is largest, under a weight limit.
 *   The archetype of a selection problem: one boolean variable per item, a weighted sum bounded
 *   from above for the capacity, and another weighted sum as the objective.

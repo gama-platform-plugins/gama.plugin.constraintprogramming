@@ -1,6 +1,6 @@
 /**
 * Name: Task Assignment
-* Author: gama.plugin.constraintprogramming
+* Author: Baptiste Lesquoy
 * Description: Assigns one distinct task to each worker agent, minimising the total cost.
 *   Shows the two things that make constraint programming useful inside an agent-based model:
 *   building one decision variable per agent in an ordinary GAML loop, and writing the solution
@@ -19,13 +19,13 @@ global {
 			// The cost of each task for this worker
 			loop times: nb_workers { costs <- costs + rnd(1, 9); }
 		}
-		do assign;
+		do assign();
 	}
 
 	/** Builds the problem from the current population of workers, searches it, and stores the
 	 * result in the agents themselves. The number of variables is decided at runtime, from the
 	 * number of agents: nothing has to be declared in advance. */
-	action assign {
+	action assign() {
 		problem p <- problem("assignment");
 
 		list<pb_variable> chosen_task <- [];

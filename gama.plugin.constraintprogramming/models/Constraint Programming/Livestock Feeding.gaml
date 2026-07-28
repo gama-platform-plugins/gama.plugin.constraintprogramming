@@ -1,6 +1,6 @@
 /**
 * Name: Livestock Feeding
-* Author: gama.plugin.constraintprogramming
+* Author: Baptiste Lesquoy
 * Description: Allocating feed resources to livestock at the lowest cost (ECONOM model).
 *   Resources come either from the local farming systems, in limited quantity, or from the market,
 *   at a higher price. Each herd has an intake capacity, a nutritional requirement, and a maximum

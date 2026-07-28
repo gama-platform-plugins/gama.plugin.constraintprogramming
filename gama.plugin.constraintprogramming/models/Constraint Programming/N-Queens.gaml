@@ -1,6 +1,6 @@
 /**
 * Name: N-Queens
-* Author: gama.plugin.constraintprogramming
+* Author: Baptiste Lesquoy
 * Description: The classic n-queens problem, written with the constraint programming plugin.
 *   One variable per column, holding the row of the queen placed in that column. Two queens
 *   are on the same diagonal when the difference of their rows equals the difference of their
