@@ -1,6 +1,6 @@
 /**
 * Name: Cryptarithm
-* Author: gama.plugin.constraintprogramming
+* Author: Baptiste Lesquoy
 * Description: SEND + MORE = MONEY. Each letter stands for a distinct digit. The archetype of a
 *   pure satisfaction problem: no objective, a single assignment to find. The whole addition is
 *   written as one weighted sum, which is what scalar expresses.
@@ -16,7 +16,7 @@ global {
 		// the letters are, in order: S E N D M O R Y
 		list<pb_variable> letters <- int_vars(p, "L", 8, 0, 9);
 
-		do all_different(letters);
+		do post(all_different(letters));
 		do post(arithm(letters[0], "!=", 0)); // S
 		do post(arithm(letters[4], "!=", 0)); // M
 		// 1000S + 100E + 10N + D  +  1000M + 100O + 10R + E  =  10000M + 1000O + 100N + 10E + Y
