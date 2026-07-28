@@ -107,6 +107,8 @@ Casting a string to `problem` creates a new, empty one.
 problem p <- problem("my_problem");
 ```
 
+`problem(string, bool)` creates one with lazy clause generation enabled, which is described under [Tuning the search](#tuning-the-search).
+
 ## Declaring variables
 
 | Operator | Returns | |
@@ -245,6 +247,58 @@ A hint tells the search which value to try first for a variable. It **guides** t
 
 `hint_from` matches variables **by name**, so the solution may come from a different `problem` object, typically the one built at the previous simulation step. That is what makes it usable with the rebuild-every-step pattern below. Variables of the solution with no counterpart in the target problem, and values that no longer belong to the domain, are skipped; the returned count is there to let you check that the match worked.
 
+## Tuning the search
+
+None of the operators below changes which solutions a problem has. They change the order in which the solver looks for them, and the cost of each node.
+
+| Operator | Returns | |
+|---|---|---|
+| `use_strategy(problem, string name)` | `problem` | how to branch, over every integer variable |
+| `use_strategy(problem, string name, list<pb_variable>)` | `problem` | the same, over a chosen subset |
+| `with_last_conflict(problem)` | `problem` | retry the variable involved in the last failure |
+| `with_conflict_ordering(problem)` | `problem` | same idea, over the whole recent conflict history |
+| `with_best_bound(problem)` | `problem` | try the bound that looks best for the objective |
+| `use_restarts(problem, string policy, int cutoff)` | `problem` | restart the search periodically |
+| `record_nogoods(problem)` | `problem` | remember across restarts what has been proven impossible |
+| `problem(string name, bool lcg)` | `problem` | create a problem with lazy clause generation |
+
+### Branching strategies
+
+| Name | |
+|---|---|
+| `default` | what the solver uses when nothing is set |
+| `input_order_lb` / `input_order_ub` | declaration order, smallest or largest value first |
+| `min_dom_lb` / `min_dom_ub` | smallest domain first |
+| `random` | random variable and value, seeded from the simulation random generator |
+| `dom_over_w_deg` / `dom_over_w_deg_ref` | weighted degree, the classic adaptive heuristic |
+| `activity_based` | branches on the variables the propagation touches most |
+| `conflict_history` | weights variables by their recent involvement in failures |
+| `failure_rate` / `failure_length` | two other failure-driven heuristics |
+| `pick_on_dom` | |
+| `round_robin` / `adaptive_round_robin` | alternate between several of the above |
+
+### Restricting the branching
+
+The three-operand form of `use_strategy` branches only on the variables given. By default the solver branches on every integer variable of the problem, including the ones produced by `sum_var`, `min_var` and the like, and the objective.
+
+```gaml
+do use_strategy(p, "dom_over_w_deg_ref", decisions);
+```
+
+The remaining variables are handled by a default strategy appended behind, through `makeCompleteStrategy`, so the search stays complete.
+
+### Restarts
+
+`cutoff` is the number of failures before the first restart. The policy decides how that number grows afterwards: `luby` follows the Luby sequence, `geometric` multiplies it by 1.2 each time, `linear` adds the cutoff, `constant` keeps it fixed, and `on_solution` ignores the cutoff and restarts after each solution.
+
+`record_nogoods` makes each restart record the assignments the previous one has ruled out. The store is consulted at every node and is never reduced.
+
+### Lazy clause generation
+
+`problem(name, true)` enables LCG: the solver derives a clause from each conflict and keeps it, instead of only backtracking.
+
+Three constraints on its use. It is decided at creation, since variables and propagators are built differently. It only covers constraints whose propagators can explain their deductions, and posting an unsupported one raises an error. And it encodes domains into boolean literals, so its cost grows with domain size rather than with the number of variables.
+
 ## Reading a solution
 
 | Operator | Returns |
@@ -303,6 +357,8 @@ loop i from: 0 to: length(worker) - 1 {
 - a plain `sum` constraint: use `arithm(sum_var(vars), op, value)` or `scalar` with unit coefficients
 - arithmetic sugar over variables (`x + y <= 10` instead of `arithm(x, "+", y, "<=", 10)`)
 - streaming enumeration: `all_solutions` materialises the whole list, there is no per-solution callback
+- large neighborhood search (`setLNS`) and the alternative traversals (`setLDS`, `setDDS`, `setHBFS`)
+- branching strategies for set, real and graph variables, only the integer ones are exposed
 
 ---
 

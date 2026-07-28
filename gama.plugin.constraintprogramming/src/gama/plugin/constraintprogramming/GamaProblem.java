@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.chocosolver.solver.Model;
+import org.chocosolver.solver.SettingsBuilder;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.variables.Variable;
 
@@ -83,6 +84,20 @@ public class GamaProblem implements IValue {
 	 */
 	public GamaProblem(final String name) {
 		model = new Model(name == null ? "problem" : name);
+	}
+
+	/**
+	 * Instantiates a new problem, optionally with lazy clause generation enabled. LCG makes the solver learn a clause
+	 * from every conflict it meets, the way a modern SAT solver does. It has to be decided here rather than later,
+	 * because the variables and the propagators are built differently.
+	 *
+	 * @param name
+	 *            the name of the problem
+	 * @param lcg
+	 *            whether to enable lazy clause generation
+	 */
+	public GamaProblem(final String name, final boolean lcg) {
+		model = new Model(name == null ? "problem" : name, new SettingsBuilder().setLCG(lcg).build());
 	}
 
 	/**
