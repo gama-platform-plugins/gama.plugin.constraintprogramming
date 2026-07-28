@@ -1,0 +1,310 @@
+# Constraint Programming for GAMA
+
+A GAMA plugin exposing [Choco-solver](https://choco-solver.org) 6 to GAML: declare decision variables, post constraints over them, and let a constraint solver find assignments that satisfy them — optionally the best one according to an objective.
+
+The GAML API mirrors the shape of the Choco Java API, so anything written for Choco translates line by line, and the Choco documentation applies directly.
+
+---
+
+## Requirements
+
+- GAMA 2026-06 or later (needs the `gama.api` module and JDK 25)
+- `choco-solver-6.0.1.jar`, in `lib/` and declared in `Bundle-ClassPath`
+
+Choco does not bundle its dependencies. Beyond the solver jar itself:
+
+| Library | Status | Used by |
+|---|---|---|
+| `trove4j` | **required** | referenced by `Model` itself — without it, creating a problem throws `NoClassDefFoundError` |
+| `dk.brics.automaton` | optional | `regular` / `costRegular` constraints (not exposed by this plugin yet) |
+| `org.kohsuke.args4j` | optional | command-line configuration of the solver |
+| `org.ehcache:sizeof` | optional | `Model.getEstimatedMemory()` only |
+| `org.jgrapht` | already provided | exported by `gama.dependencies` — do **not** add a second copy |
+
+---
+
+## The four steps
+
+Every model follows the same sequence: create a problem, declare its variables, post constraints, search.
+
+```gaml
+model n_queens
+
+global {
+    int n <- 8;
+
+    init {
+        // 1. the problem
+        problem p <- problem("n_queens");
+
+        // 2. the variables: one per column, holding the row of its queen
+        list<pb_variable> queens <- int_vars(p, "Q", n, 1, n);
+
+        // 3. the constraints
+        do post(all_different(queens));
+        loop i from: 0 to: n - 2 {
+            loop j from: i + 1 to: n - 1 {
+                do post(arithm(queens[i], "-", queens[j], "!=", j - i));
+                do post(arithm(queens[i], "-", queens[j], "!=", i - j));
+            }
+        }
+
+        // 4. the search
+        solution sol <- search(p, 10 #s);
+        if (sol.exists) { write values_of(sol, queens); }
+    }
+}
+```
+
+### Building a constraint is not posting it
+
+`all_different(queens)` builds an object representing a *relation*. `post` turns it into an *assertion*: "this relation holds in every solution". The two are separate because an unposted constraint can be reasoned about rather than enforced — which is what `reify`, `or_all`, `if_then` and `opposite` need.
+
+```gaml
+// hard: the relation must hold
+do post(arithm(end_last, "<=", 17));
+
+// soft: we count whether it holds, and maximise that
+pb_variable on_time <- reify(arithm(end_last, "<=", 17));
+solution best <- maximize(p, on_time);
+```
+
+> **Careful:** a constraint that is built and never posted is silently ignored. `do all_different(q);` compiles, runs, and does nothing — the missing `post` is not reported.
+
+---
+
+## Types
+
+| Type | Wraps | Notes |
+|---|---|---|
+| `problem` | `org.chocosolver.solver.Model` | mutable and stateful; never copied |
+| `pb_variable` | `org.chocosolver.solver.variables.Variable` | int, bool, set or real |
+| `constraint` | `org.chocosolver.solver.constraints.Constraint` | inert until posted |
+| `solution` | `org.chocosolver.solver.Solution` | independent snapshot of the values |
+
+### Attributes
+
+**`problem`**
+
+| Attribute | Type | Meaning |
+|---|---|---|
+| `name` | `string` | name given at creation |
+| `nb_variables` | `int` | number of variables declared |
+| `nb_constraints` | `int` | number of constraints posted |
+| `variables` | `list<pb_variable>` | in declaration order |
+| `solutions` | `int` | solutions found by the last search |
+| `search_time` | `float` | duration of the last search, in seconds |
+| `nodes` | `int` | nodes explored |
+| `fails` | `int` | failures encountered |
+
+**`pb_variable`**
+
+| Attribute | Type | Meaning |
+|---|---|---|
+| `name` | `string` | name in the problem |
+| `kind` | `string` | `"int"`, `"bool"`, `"set"`, `"real"` or `"other"` |
+| `lb` / `ub` | `int` | current bounds of the domain (int and bool variables) |
+| `instantiated` | `bool` | whether the domain holds a single value |
+| `value` | `int` | that value, or `nil`. To read a variable **in a given solution**, use `value_of` |
+
+**`solution`**
+
+| Attribute | Type | Meaning |
+|---|---|---|
+| `exists` | `bool` | false if the problem has no solution, or the search was interrupted first |
+| `values` | `map<string, int>` | every int and bool variable, by name |
+
+---
+
+## Creating a problem
+
+Casting a string to `problem` creates a new, empty one.
+
+```gaml
+problem p <- problem("my_problem");
+```
+
+## Declaring variables
+
+| Operator | Returns | |
+|---|---|---|
+| `int_var(problem, string, float lb, float ub)` | `pb_variable` | domain `[lb, ub]` |
+| `int_var(problem, string, list<int>)` | `pb_variable` | explicit domain |
+| `int_vars(problem, string, int n, float lb, float ub)` | `list<pb_variable>` | `n` variables named `<prefix>_0` … |
+| `bool_var(problem, string)` | `pb_variable` | domain `[0, 1]` |
+| `bool_vars(problem, string, int n)` | `list<pb_variable>` | |
+| `real_var(problem, string, float lb, float ub)` | `pb_variable` | continuous |
+| `set_var(problem, string, list<int> mandatory, list<int> possible)` | `pb_variable` | set variable |
+| `variable_named(problem, string)` | `pb_variable` | look-up by name, `nil` if absent |
+
+Bounds are floats, so `#infinity` and `-#infinity` are accepted and clamped to the range Choco supports (±21 474 836 — it caps domains at `Integer.MAX_VALUE / 100` to keep a margin against overflow inside the propagators). Beyond 65 536 values, a domain is represented by its bounds only rather than by an enumeration: much less memory, slightly weaker propagation. That is what you want for totals and objectives.
+
+## Derived variables
+
+Each of these declares a new variable and links it to its operands. Named with a `_var` suffix because `sum`, `min`, `max`, `count`, `abs` and `mod` are already operators of the GAML core.
+
+| Operator | Returns |
+|---|---|
+| `sum_var(list<pb_variable>)` | the sum |
+| `min_var(list<pb_variable>)` / `max_var(list<pb_variable>)` | the smallest / largest value taken |
+| `count_var(list<pb_variable>, int value)` | how many variables take `value` |
+| `arg_min_var(list<pb_variable>)` / `arg_max_var(list<pb_variable>)` | index of the smallest / largest |
+| `element_var(list<int> table, pb_variable index)` | `table[index]`, indices from 0 |
+| `mod_var(pb_variable, int divisor)` | the remainder |
+| `abs_var(pb_variable)` | absolute value — a *view*, free |
+| `neg_var(pb_variable)` | opposite — a view |
+| `offset_var(pb_variable, int)` | `x + k` — a view |
+| `scale_var(pb_variable, int)` | `x * k` — a view |
+
+Views cost neither a propagator nor a search decision: prefer them when they apply.
+
+## Constraints
+
+All of them return a `constraint`, which has to be posted to take effect.
+
+### Arithmetic and membership
+
+| Operator | Meaning |
+|---|---|
+| `arithm(pb_variable, string op, int)` | `x op v`, with `op` in `= != < <= > >=` |
+| `arithm(pb_variable, string op, pb_variable)` | `x op y` |
+| `arithm(pb_variable, string op1, pb_variable, string op2, int)` | `x op1 y op2 v`, `op1` in `+ - * /` |
+| `scalar(list<pb_variable>, list<int> coeffs, string op, int)` | weighted sum compared to a constant |
+| `scalar(list<pb_variable>, list<int> coeffs, string op, pb_variable)` | weighted sum compared to a variable |
+| `member(pb_variable, list<int>)` | takes one of these values |
+| `not_member(pb_variable, list<int>)` | takes none of them |
+
+### Over a list of variables
+
+| Operator | Meaning |
+|---|---|
+| `all_different(list<pb_variable>)` | pairwise distinct |
+| `all_different_except_0(list<pb_variable>)` | pairwise distinct, 0 meaning "unassigned" |
+| `all_equal(list<pb_variable>)` / `not_all_equal(list<pb_variable>)` | |
+| `element(pb_variable value, list<int> table, pb_variable index)` | `value = table[index]` |
+| `among_values(pb_variable nb, list<pb_variable>, list<int> values)` | `nb` variables take one of `values` |
+| `n_values(list<pb_variable>, pb_variable nb)` | exactly `nb` distinct values |
+| `at_least_n_values` / `at_most_n_values(list<pb_variable>, pb_variable nb)` | bounds on that count |
+| `global_cardinality(list<pb_variable>, list<int> values, list<pb_variable> occurrences, bool closed)` | occurrence count per value |
+| `increasing(list<pb_variable>, int delta)` / `decreasing(…)` | monotone; `delta = 1` makes it strict |
+| `sorted(list<pb_variable>, list<pb_variable>)` | the second list is the first, sorted |
+| `lex_less` / `lex_less_eq(list<pb_variable>, list<pb_variable>)` | lexicographic order — useful to break symmetries |
+| `inverse_channeling(list<pb_variable>, list<pb_variable>)` | `a[j] = i` iff `b[i] = j` |
+
+### Routing and packing
+
+| Operator | Meaning |
+|---|---|
+| `circuit(list<pb_variable>)` | successors forming a single hamiltonian circuit |
+| `sub_circuit(list<pb_variable>, pb_variable size)` | a circuit over `size` nodes, the others self-looping |
+| `path(list<pb_variable>, pb_variable start, pb_variable end)` | a hamiltonian path |
+| `tree(list<pb_variable>, pb_variable nb_roots)` | predecessors forming an anti-arborescence |
+| `bin_packing(list<pb_variable> item_bin, list<int> item_size, list<pb_variable> bin_load, int offset)` | |
+| `knapsack(list<pb_variable> occurrences, pb_variable weight_sum, pb_variable energy_sum, list<int> weights, list<int> energies)` | |
+
+### Combining constraints
+
+These take **unposted** constraints and produce one that can be posted.
+
+| Operator | Returns | Meaning |
+|---|---|---|
+| `and_all(list<constraint>)` | `constraint` | all of them hold |
+| `or_all(list<constraint>)` | `constraint` | at least one holds |
+| `opposite(constraint)` | `constraint` | it does not hold (`not` is taken by the core) |
+| `if_then(constraint, constraint)` | `constraint` | implication |
+| `reify(constraint)` | `pb_variable` | a bool variable, true iff the constraint holds |
+
+## Posting
+
+| Operator | Returns |
+|---|---|
+| `post(constraint)` | the constraint |
+| `post(problem, constraint)` | the constraint, checking it belongs to that problem |
+| `post_all(list<constraint>)` | the list |
+
+Posting is a side effect, so these are called through `do`:
+
+```gaml
+do post(all_different(queens));
+```
+
+Posting the same constraint twice is a no-op, so a constraint held in a variable can safely be posted inside a loop.
+
+## Searching
+
+| Operator | Returns |
+|---|---|
+| `search(problem)` | first solution found |
+| `search(problem, float within)` | same, with a time budget |
+| `minimize(problem, pb_variable objective)` | proven optimum |
+| `minimize(problem, pb_variable objective, float within)` | best found within the budget |
+| `maximize(problem, pb_variable objective)` | |
+| `maximize(problem, pb_variable objective, float within)` | |
+| `all_solutions(problem)` | `list<solution>` — every solution |
+| `all_solutions(problem, int limit)` | `list<solution>` — at most `limit` |
+
+`within` is a duration, so it is written in model time units: `5 #s`, `200 #ms`.
+
+```gaml
+solution best <- minimize(p, total_cost, 20 #s);
+```
+
+## Reading a solution
+
+| Operator | Returns |
+|---|---|
+| `value_of(solution, pb_variable)` | `int`, or `nil` if no solution was found |
+| `values_of(solution, list<pb_variable>)` | `list<int>`, in the same order |
+| `set_value_of(solution, pb_variable)` | `list<int>` — elements of a set variable |
+
+---
+
+## Semantics worth knowing
+
+**A problem is mutable and shared.** It carries a propagation engine and a backtracking trail, so assigning it to another GAML variable shares it rather than copying it, and a simulation holding a live problem cannot be serialised. Build a problem, search it, drop it.
+
+**The solver keeps its state between two searches.** Searching the same problem twice resumes where the previous search stopped — which is what makes an anytime search spread over several simulation cycles possible, but also means a second `search(p)` will not return the first solution again. For independent searches, build a fresh problem.
+
+**Every search is interruptible.** A stop criterion bound to the interruption of the simulation is installed for the duration of each search, so stopping or closing an experiment stops the solver. Prefer the forms with a time budget anyway: an unsatisfiable problem can otherwise keep the solver busy for a very long time.
+
+**The number of variables is decided at runtime.** Nothing has to be declared in advance: variables are built in ordinary GAML loops, which is what makes "one decision variable per agent" natural.
+
+```gaml
+list<pb_variable> slot <- [];
+loop w over: workers { slot <- slot + int_var(p, "slot_" + w.name, 1, nb_slots); }
+do post(all_different(slot));
+
+solution best <- minimize(p, sum_var(costs), 5 #s);
+loop i from: 0 to: length(worker) - 1 {
+    worker[i].assigned_slot <- value_of(best, slot[i]);
+}
+```
+
+---
+
+## Not exposed yet
+
+- `cumulative` and the scheduling constraints that need Choco's `Task` type
+- `table` (extension constraints), which needs `Tuples`
+- the set and graph constraint families (77 constraints), which need set and graph decision variables
+- `regular` / `costRegular`, which need automata
+- a plain `sum` constraint — use `arithm(sum_var(vars), op, value)` or `scalar` with unit coefficients
+- arithmetic sugar over variables (`x + y <= 10` instead of `arithm(x, "+", y, "<=", 10)`)
+- streaming enumeration: `all_solutions` materialises the whole list, there is no per-solution callback
+
+---
+
+## Example models
+
+In `models/Constraint Programming/`:
+
+| Model | Archetype |
+|---|---|
+| `Cryptarithm.gaml` | pure satisfaction — SEND + MORE = MONEY |
+| `N-Queens.gaml` | placement, and enumeration of several solutions |
+| `Knapsack.gaml` | selection under a budget |
+| `Graph Colouring.gaml` | partitioning, with symmetry breaking |
+| `Scheduling.gaml` | sequencing over time, minimising the makespan |
+| `Travelling Salesman.gaml` | routing, with `circuit` and `element_var` |
+| `Task Assignment.gaml` | assignment over agents, with write-back into their attributes |
+| `Livestock Feeding.gaml` | a full linear model translated from Choco Java |
