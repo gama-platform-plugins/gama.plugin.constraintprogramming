@@ -3,9 +3,11 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Constraint Programming
 Bundle-SymbolicName: gama.plugin.constraintprogramming;singleton:=true
 Bundle-Version: 1.0.0.qualifier
+Export-Package: gama.plugin.constraintprogramming,
+ gaml.additions.constraintprogramming
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ClassPath: .,
- lib/choco-solver-6.0.1.jar
+ lib/choco-solver-6.0.1-light.jar
 Bundle-ActivationPolicy: lazy
 Require-Bundle: gama.dependencies,
  gama.annotations,

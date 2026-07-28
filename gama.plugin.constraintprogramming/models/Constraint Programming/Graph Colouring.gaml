@@ -1,6 +1,6 @@
 /**
 * Name: Graph Colouring
-* Author: gama.plugin.constraintprogramming
+* Author: Baptiste Lesquoy
 * Description: Colouring the nodes of a graph so that no two adjacent nodes share a colour,
 *   using as few colours as possible. The archetype of a partitioning problem: one variable per
 *   node, an inequality per edge, and the largest colour used as objective.
@@ -30,7 +30,7 @@ global {
 		solution best <- minimize(p, nb_colours);
 
 		if (best.exists) {
-			write value_of(best, nb_colours) + " colours needed";
+			write '' + value_of(best, nb_colours) + " colours needed";
 			list<int> assigned <- values_of(best, colours);
 			loop i from: 0 to: nb_nodes - 1 { write "  node " + i + ": colour " + assigned[i]; }
 		} else {

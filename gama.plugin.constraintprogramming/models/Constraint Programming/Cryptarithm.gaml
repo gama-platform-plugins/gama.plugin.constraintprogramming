@@ -17,8 +17,8 @@ global {
 		list<pb_variable> letters <- int_vars(p, "L", 8, 0, 9);
 
 		do all_different(letters);
-		post arithm(letters[0], "!=", 0); // S
-		post arithm(letters[4], "!=", 0); // M
+		do post(arithm(letters[0], "!=", 0)); // S
+		do post(arithm(letters[4], "!=", 0)); // M
 		// 1000S + 100E + 10N + D  +  1000M + 100O + 10R + E  =  10000M + 1000O + 100N + 10E + Y
 		do post(scalar(letters, [1000, 91, -90, 1, -9000, -900, 10, -1], "=", 0));
 		solution sol <- search(p);

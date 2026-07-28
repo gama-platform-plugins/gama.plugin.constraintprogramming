@@ -1,6 +1,6 @@
 /**
 * Name: Scheduling
-* Author: gama.plugin.constraintprogramming
+* Author: Baptiste Lesquoy
 * Description: Placing tasks in time so that every precedence is respected and the whole project
 *   ends as early as possible. The archetype of a sequencing problem: one start variable per task,
 *   one inequality per precedence, and the makespan as objective.

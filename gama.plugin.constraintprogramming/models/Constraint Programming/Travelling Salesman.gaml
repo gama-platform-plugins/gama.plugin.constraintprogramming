@@ -1,6 +1,6 @@
 /**
 * Name: Travelling Salesman
-* Author: gama.plugin.constraintprogramming
+* Author: Baptiste Lesquoy
 * Description: Finding the shortest tour visiting every city exactly once. The archetype of a
 *   routing problem: one successor variable per city, the circuit constraint to forbid sub-tours,
 *   and element_var to read the length of a leg in the distance matrix at a variable index.
