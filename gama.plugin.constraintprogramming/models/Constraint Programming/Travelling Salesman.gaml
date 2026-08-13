@@ -11,16 +11,19 @@ model travelling_salesman
 
 global {
 
-	list<list<int>> distances <- [
+	// One row per city. This matrix is symmetric, so the row and column convention of
+	// element_var does not matter here; it would on an asymmetric cost matrix.
+	matrix<int> distances <- matrix([
 		[0, 4, 8, 9, 12],
 		[4, 0, 6, 8, 9],
 		[8, 6, 0, 10, 11],
 		[9, 8, 10, 0, 7],
 		[12, 9, 11, 7, 0]
-	];
+	]);
+
+	int nb_cities <- 5;
 
 	init {
-		int nb_cities <- length(distances);
 		problem p <- problem("tsp");
 
 		// next[i] = j means that the tour goes from city i to city j. circuit forces these
@@ -30,7 +33,7 @@ global {
 
 		list<pb_variable> legs <- [];
 		loop i from: 0 to: nb_cities - 1 {
-			legs <- legs + element_var(distances[i], next[i]);
+			legs <- legs + element_var(distances, i, next[i]);
 		}
 		pb_variable tour_length <- sum_var(legs);
 

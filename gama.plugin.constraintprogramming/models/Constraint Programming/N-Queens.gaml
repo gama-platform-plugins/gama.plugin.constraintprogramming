@@ -21,8 +21,8 @@ global {
 		do post(all_different(queens));
 		loop i from: 0 to: size - 2 {
 			loop j from: i + 1 to: size - 1 {
-				do post(arithm(queens[i], "-", queens[j], "!=", j - i));
-				do post(arithm(queens[i], "-", queens[j], "!=", i - j));
+				do post(queens[i] - queens[j] != j - i);
+				do post(queens[i] - queens[j] != i - j);
 			}
 		}
 	}

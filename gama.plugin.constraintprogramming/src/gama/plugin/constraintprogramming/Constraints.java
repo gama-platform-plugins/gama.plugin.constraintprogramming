@@ -2,6 +2,7 @@ package gama.plugin.constraintprogramming;
 
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.constraints.Constraint;
+import org.chocosolver.solver.constraints.extension.Tuples;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -10,7 +11,9 @@ import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.gaml.types.Cast;
 import gama.api.types.list.IList;
+import gama.api.types.matrix.IMatrix;
 
 /**
  * The operators that build constraints over the variables of a problem.
@@ -672,6 +675,59 @@ public class Constraints {
 		return of(scope, occurrences,
 				p.getModel().knapsack(CPUtils.intVars(scope, occurrences), weightSum.asIntVar(scope),
 						energySum.asIntVar(scope), CPUtils.ints(scope, weights), CPUtils.ints(scope, energies)));
+	}
+
+	/**
+	 * An explicit list of the allowed combinations.
+	 */
+	@operator (
+			value = "table",
+			category = { CPUtils.CATEGORY },
+			concept = { IConcept.OPTIMIZATION })
+	@doc (
+			value = "Builds the constraint stating that the values taken by the variables form one of the rows of the matrix. Each row is one allowed combination, and the matrix must have as many columns as there are variables.",
+			comment = "This is the way to express a relation that has no analytical form: a tabulated response curve, an empirical compatibility table, a rule set given by extension. A table propagates strongly, since it reasons over the whole relation at once, but its size grows as the product of the domains.",
+			examples = { @example (
+					value = "do post(table(vars, matrix([[1, 2], [2, 4], [3, 8]])));",
+					isExecutable = false) },
+			see = { "as_table", "element" })
+	@no_test
+	public static GamaConstraint table(final IScope scope, final IList<GamaVariable> vars, final IMatrix rows)
+			throws GamaRuntimeException {
+		return table(scope, vars, rows, true);
+	}
+
+	/**
+	 * An explicit list of the allowed, or forbidden, combinations.
+	 */
+	@operator (
+			value = "table",
+			category = { CPUtils.CATEGORY },
+			concept = { IConcept.OPTIMIZATION })
+	@doc (
+			value = "Builds the constraint stating that the values taken by the variables form one of the rows of the matrix when the last operand is true, and none of them when it is false.",
+			see = { "table" })
+	@no_test
+	public static GamaConstraint table(final IScope scope, final IList<GamaVariable> vars, final IMatrix rows,
+			final boolean allowed) throws GamaRuntimeException {
+		final GamaProblem p = CPUtils.problemOf(scope, vars);
+		if (rows == null) throw GamaRuntimeException.error("A nil matrix was given to table", scope);
+		final int cols = rows.getCols(scope);
+		final int lines = rows.getRows(scope);
+		if (cols != vars.size()) throw GamaRuntimeException.error("table expects a matrix with as many columns ("
+				+ cols + ") as there are variables (" + vars.size() + ")", scope);
+		final Tuples tuples = new Tuples(allowed);
+		for (int r = 0; r < lines; r++) {
+			final int[] tuple = new int[cols];
+			for (int c = 0; c < cols; c++) {
+				final Integer v = Cast.asInt(scope, rows.get(scope, c, r));
+				if (v == null) throw GamaRuntimeException
+						.error("nil found at row " + r + ", column " + c + " of a table", scope);
+				tuple[c] = v;
+			}
+			tuples.add(tuple);
+		}
+		return of(scope, vars, p.getModel().table(CPUtils.intVars(scope, vars), tuples));
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------

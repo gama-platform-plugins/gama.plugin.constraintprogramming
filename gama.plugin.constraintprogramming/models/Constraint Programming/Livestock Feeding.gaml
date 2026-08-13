@@ -101,7 +101,7 @@ global {
 					used_locally <- used_locally + x_feed[r][p][l];
 				}
 			}
-			do post(arithm(sum_var(used_locally), "<=", q_loc[r]));
+			do post(sum_var(used_locally) <= q_loc[r]);
 		}
 
 		// -------------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ global {
 			}
 			int total_intake <- 0;
 			loop p from: 0 to: nb_systems - 1 { total_intake <- total_intake + slh[l][p] * ic[l]; }
-			do post(arithm(sum_var(consumed), "<=", total_intake));
+			do post(sum_var(consumed) <= total_intake);
 		}
 
 		// -------------------------------------------------------------------------------------

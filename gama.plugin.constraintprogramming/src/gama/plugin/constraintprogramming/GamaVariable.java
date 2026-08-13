@@ -1,5 +1,6 @@
 package gama.plugin.constraintprogramming;
 
+import org.chocosolver.solver.expression.discrete.arithmetic.ArExpression;
 import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.RealVar;
@@ -52,8 +53,15 @@ public class GamaVariable implements IValue {
 	/** The problem this variable belongs to. */
 	private final GamaProblem problem;
 
-	/** The underlying Choco variable. */
-	private final Variable variable;
+	/** The underlying Choco variable, null while this is a pure expression. */
+	private Variable variable;
+
+	/**
+	 * The arithmetic expression this wrapper stands for, null when it wraps a declared variable. Expressions are kept
+	 * unevaluated so that the whole tree can be handed to Choco at once, which lets it choose how to turn it into
+	 * propagators rather than materialising one intermediate variable per operator.
+	 */
+	private final ArExpression expression;
 
 	/**
 	 * Instantiates a new variable wrapper.
@@ -66,6 +74,44 @@ public class GamaVariable implements IValue {
 	public GamaVariable(final GamaProblem problem, final Variable variable) {
 		this.problem = problem;
 		this.variable = variable;
+		this.expression = null;
+	}
+
+	/**
+	 * Instantiates a wrapper around an arithmetic expression that has not been materialised yet.
+	 *
+	 * @param problem
+	 *            the problem the expression is expressed over
+	 * @param expression
+	 *            the Choco expression
+	 */
+	public GamaVariable(final GamaProblem problem, final ArExpression expression) {
+		this.problem = problem;
+		this.variable = null;
+		this.expression = expression;
+	}
+
+	/**
+	 * Whether this wrapper holds an expression that has not been turned into a variable yet.
+	 *
+	 * @return true if it is a pure expression
+	 */
+	public boolean isExpression() { return expression != null && variable == null; }
+
+	/**
+	 * Returns this as a Choco arithmetic expression, usable as an operand of the arithmetic and relational operators.
+	 *
+	 * @param scope
+	 *            the current scope, used to report the error
+	 * @return the expression
+	 * @throws GamaRuntimeException
+	 *             if this wraps a variable that is not an integer one
+	 */
+	public ArExpression asExpression(final IScope scope) throws GamaRuntimeException {
+		if (expression != null) return expression;
+		if (variable instanceof IntVar iv) return iv;
+		throw GamaRuntimeException.error("The variable " + getVariableName() + " is a " + getKind()
+				+ " variable, and cannot take part in an arithmetic expression", scope);
 	}
 
 	/**
@@ -93,7 +139,15 @@ public class GamaVariable implements IValue {
 	 */
 	public IntVar asIntVar(final IScope scope) throws GamaRuntimeException {
 		if (variable instanceof IntVar iv) return iv;
-		throw GamaRuntimeException.error("The variable " + variable.getName() + " is a " + getKind()
+		if (variable == null && expression != null) {
+			// The expression is materialised on first use and kept, so that reading it twice does not add a second
+			// variable and a second propagator to the problem.
+			final IntVar materialised = expression.intVar();
+			variable = materialised;
+			problem.register(materialised);
+			return materialised;
+		}
+		throw GamaRuntimeException.error("The variable " + getVariableName() + " is a " + getKind()
 				+ " variable, whereas an int variable is expected here", scope);
 	}
 
@@ -108,9 +162,31 @@ public class GamaVariable implements IValue {
 	 */
 	public BoolVar asBoolVar(final IScope scope) throws GamaRuntimeException {
 		if (variable instanceof BoolVar bv) return bv;
-		throw GamaRuntimeException.error("The variable " + variable.getName() + " is a " + getKind()
+		throw GamaRuntimeException.error("The variable " + getVariableName() + " is a " + getKind()
 				+ " variable, whereas a bool variable is expected here", scope);
 	}
+
+	/**
+	 * Gets the underlying variable as a real variable.
+	 *
+	 * @param scope
+	 *            the current scope, used to report the error
+	 * @return the variable, seen as a RealVar
+	 * @throws GamaRuntimeException
+	 *             if the variable is not a real variable
+	 */
+	public RealVar asRealVar(final IScope scope) throws GamaRuntimeException {
+		if (variable instanceof RealVar rv) return rv;
+		throw GamaRuntimeException.error("The variable " + getVariableName() + " is a " + getKind()
+				+ " variable, whereas a real variable is expected here", scope);
+	}
+
+	/**
+	 * Whether this wraps a real variable.
+	 *
+	 * @return true if it is a real variable
+	 */
+	public boolean isReal() { return variable instanceof RealVar; }
 
 	/**
 	 * Gets the underlying variable as a set variable.
@@ -123,15 +199,16 @@ public class GamaVariable implements IValue {
 	 */
 	public SetVar asSetVar(final IScope scope) throws GamaRuntimeException {
 		if (variable instanceof SetVar sv) return sv;
-		throw GamaRuntimeException.error("The variable " + variable.getName() + " is a " + getKind()
+		throw GamaRuntimeException.error("The variable " + getVariableName() + " is a " + getKind()
 				+ " variable, whereas a set variable is expected here", scope);
 	}
 
 	@getter ("name")
-	public String getVariableName() { return variable.getName(); }
+	public String getVariableName() { return variable == null ? "(expression)" : variable.getName(); }
 
 	@getter ("kind")
 	public String getKind() {
+		if (variable == null) return "expression";
 		if (variable instanceof BoolVar) return "bool";
 		if (variable instanceof IntVar) return "int";
 		if (variable instanceof SetVar) return "set";
@@ -152,7 +229,7 @@ public class GamaVariable implements IValue {
 	}
 
 	@getter ("instantiated")
-	public boolean isInstantiated() { return variable.isInstantiated(); }
+	public boolean isInstantiated() { return variable != null && variable.isInstantiated(); }
 
 	@getter ("value")
 	public Integer getValue() {
@@ -165,12 +242,12 @@ public class GamaVariable implements IValue {
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
-		return variable.toString();
+		return variable == null ? expression.toString() : variable.toString();
 	}
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return variable.getName();
+		return getVariableName();
 	}
 
 	/**
@@ -190,7 +267,7 @@ public class GamaVariable implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType()).add("name", variable.getName()).add("kind", getKind());
+		return json.typedObject(getGamlType()).add("name", getVariableName()).add("kind", getKind());
 	}
 
 }

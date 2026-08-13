@@ -19,11 +19,11 @@ global {
 		list<pb_variable> colours <- int_vars(p, "colour", nb_nodes, 1, nb_nodes);
 
 		loop edge over: edges {
-			do post(arithm(colours[edge[0]], "!=", colours[edge[1]]));
+			do post(colours[edge[0]] != colours[edge[1]]);
 		}
 		// Symmetry breaking: colours are interchangeable, so the first node can always be
 		// given the first colour. Without this the solver explores many equivalent solutions.
-		do post(arithm(colours[0], "=", 1));
+		do post(colours[0] = 1);
 
 		// Minimising the largest colour used amounts to minimising the number of colours
 		pb_variable nb_colours <- max_var(colours);

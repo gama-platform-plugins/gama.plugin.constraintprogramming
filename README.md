@@ -27,8 +27,8 @@ global {
         do post(all_different(queens));
         loop i from: 0 to: n - 2 {
             loop j from: i + 1 to: n - 1 {
-                do post(arithm(queens[i], "-", queens[j], "!=", j - i));
-                do post(arithm(queens[i], "-", queens[j], "!=", i - j));
+                do post(queens[i] - queens[j] != j - i);
+                do post(queens[i] - queens[j] != i - j);
             }
         }
 
@@ -45,10 +45,10 @@ global {
 
 ```gaml
 // hard: the relation must hold
-do post(arithm(end_last, "<=", 17));
+do post(end_last <= 17);
 
 // soft: we count whether it holds, and maximise that
-pb_variable on_time <- reify(arithm(end_last, "<=", 17));
+pb_variable on_time <- reify(end_last <= 17);
 solution best <- maximize(p, on_time);
 ```
 
@@ -85,7 +85,7 @@ solution best <- maximize(p, on_time);
 | Attribute | Type | Meaning |
 |---|---|---|
 | `name` | `string` | name in the problem |
-| `kind` | `string` | `"int"`, `"bool"`, `"set"`, `"real"` or `"other"` |
+| `kind` | `string` | `"int"`, `"bool"`, `"set"`, `"real"`, `"expression"` or `"other"` |
 | `lb` / `ub` | `int` | current bounds of the domain (int and bool variables) |
 | `instantiated` | `bool` | whether the domain holds a single value |
 | `value` | `int` | that value, or `nil`. To read a variable **in a given solution**, use `value_of` |
@@ -135,6 +135,7 @@ Each of these declares a new variable and links it to its operands. Named with a
 | `count_var(list<pb_variable>, int value)` | how many variables take `value` |
 | `arg_min_var(list<pb_variable>)` / `arg_max_var(list<pb_variable>)` | index of the smallest / largest |
 | `element_var(list<int> table, pb_variable index)` | `table[index]`, indices from 0 |
+| `element_var(matrix<int> table, int row, pb_variable index)` | the value read on that row, at a variable column |
 | `mod_var(pb_variable, int divisor)` | the remainder |
 | `abs_var(pb_variable)` | absolute value (a view, so it is free) |
 | `neg_var(pb_variable)` | opposite (a view) |
@@ -142,6 +143,33 @@ Each of these declares a new variable and links it to its operands. Named with a
 | `scale_var(pb_variable, int)` | `x * k` (a view) |
 
 Views cost neither a propagator nor a search decision: prefer them when they apply.
+
+## Expressions
+
+The arithmetic and relational operators of GAML are overloaded over `pb_variable`.
+
+| Operator | Operands | Returns |
+|---|---|---|
+| `+` `-` `*` `/` `mod` | variable/variable, variable/int, int/variable | `pb_variable` |
+| `-` | variable | `pb_variable` |
+| `^` | variable/int, variable/variable | `pb_variable` |
+| `=` `!=` `<` `<=` `>` `>=` | variable/variable, variable/int, int/variable | `constraint` |
+| `same(pb_variable, pb_variable)` | | `bool` |
+| `as_table(constraint)` | | `constraint` |
+
+```gaml
+do post(starts[before] + durations[before] <= starts[after]);
+do post(quantity * unit_price = cost);
+do post(queens[i] - queens[j] != j - i);
+```
+
+An arithmetic operator builds a tree and adds nothing to the problem. The tree is handed to Choco as a whole when the relation is posted, which lets it compile the expression rather than materialise one intermediate variable per operator. A `pb_variable` holding an expression reports `"expression"` as its `kind`, and is materialised on first use where a real variable is required, for instance as the objective of a search.
+
+`=` builds a constraint here, not a boolean. `same` performs the identity test that `=` performs on every other type.
+
+`as_table` recompiles a constraint built from an expression into a single table listing the combinations that satisfy it. A table propagates far more strongly than the decomposition, since it reasons over the whole relation at once, but the number of combinations grows as the product of the domain sizes.
+
+Products, quotients, powers and remainders of two variables are non-linear constraints, propagated on the bounds only.
 
 ## Constraints
 
@@ -158,6 +186,8 @@ All of them return a `constraint`, which has to be posted to take effect.
 | `scalar(list<pb_variable>, list<int> coeffs, string op, pb_variable)` | weighted sum compared to a variable |
 | `member(pb_variable, list<int>)` | takes one of these values |
 | `not_member(pb_variable, list<int>)` | takes none of them |
+| `table(list<pb_variable>, matrix<int> rows)` | the values form one of the rows of the matrix |
+| `table(list<pb_variable>, matrix<int> rows, bool allowed)` | one of the rows, or none of them when `allowed` is false |
 
 ### Over a list of variables
 
@@ -175,6 +205,22 @@ All of them return a `constraint`, which has to be posted to take effect.
 | `sorted(list<pb_variable>, list<pb_variable>)` | the second list is the first, sorted |
 | `lex_less` / `lex_less_eq(list<pb_variable>, list<pb_variable>)` | lexicographic order, useful to break symmetries |
 | `inverse_channeling(list<pb_variable>, list<pb_variable>)` | `a[j] = i` iff `b[i] = j` |
+
+A `table` is how a relation with no analytical form is expressed: a tabulated response curve, an empirical compatibility table, a rule set given by extension. It has one column per variable and one row per allowed combination, and it propagates over the whole relation at once. Its size grows as the product of the domains.
+
+### Reals
+
+Choco delegates every non-linear operation over reals to Ibex, a native library that is not shipped with the plugin, so only the constraints implemented in Java are exposed. Non-linear continuous relations are out of reach; the usual way around it is to work in fixed point, multiplying the quantities by a power of ten and modelling them as integers, which also keeps the full strength of the integer propagators.
+
+| Operator | Returns | |
+|---|---|---|
+| `real_var(problem, string, float lb, float ub)` | `pb_variable` | declares a continuous variable |
+| `real_scalar(list<pb_variable>, list<float> coeffs, string op, float value)` | `constraint` | weighted sum, over integer and real variables mixed |
+| `real_element(pb_variable, list<float> table, pb_variable index)` | `constraint` | the real equals `table[index]` |
+| `real_view(pb_variable, float precision)` | `pb_variable` | a real view of an integer variable, free |
+| `set_precision(problem, float)` | `problem` | below which a real domain counts as instantiated |
+
+`=` between a real variable and an integer one builds the channelling constraint between them rather than an arithmetic equality.
 
 ### Routing and packing
 
@@ -351,11 +397,10 @@ loop i from: 0 to: length(worker) - 1 {
 ## Not exposed yet
 
 - `cumulative` and the scheduling constraints that need Choco's `Task` type
-- `table` (extension constraints), which needs `Tuples`
 - the set and graph constraint families (77 constraints), which need set and graph decision variables
+- non-linear constraints over reals, which in Choco go through the native Ibex library
 - `regular` / `costRegular`, which need automata
 - a plain `sum` constraint: use `arithm(sum_var(vars), op, value)` or `scalar` with unit coefficients
-- arithmetic sugar over variables (`x + y <= 10` instead of `arithm(x, "+", y, "<=", 10)`)
 - streaming enumeration: `all_solutions` materialises the whole list, there is no per-solution callback
 - large neighborhood search (`setLNS`) and the alternative traversals (`setLDS`, `setDDS`, `setHBFS`)
 - branching strategies for set, real and graph variables, only the integer ones are exposed

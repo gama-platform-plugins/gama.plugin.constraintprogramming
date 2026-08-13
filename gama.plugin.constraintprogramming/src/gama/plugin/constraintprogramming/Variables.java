@@ -13,6 +13,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.matrix.IMatrix;
 
 /**
  * The operators that declare variables in a problem, and those that derive a new variable from existing ones.
@@ -327,6 +328,35 @@ public class Variables {
 		final GamaProblem p = CPUtils.problemOf(scope, index);
 		return p.register(
 				p.getModel().element(p.newName("element"), CPUtils.ints(scope, table), index.asIntVar(scope), 0));
+	}
+
+	/**
+	 * The value read in one row of a matrix at a variable index.
+	 */
+	@operator (
+			value = "element_var",
+			category = { CPUtils.CATEGORY },
+			concept = { IConcept.OPTIMIZATION })
+	@doc (
+			value = "Returns a new variable constrained to be equal to the value read in the matrix given as first operand, on the row given as second, at the column given by the variable of the third. Indices start at 0.",
+			examples = { @example (
+					value = "pb_variable leg <- element_var(distances, i, next[i]);",
+					isExecutable = false) },
+			see = { "element_var", "element" })
+	@no_test
+	public static GamaVariable elementVar(final IScope scope, final IMatrix table, final int row,
+			final GamaVariable index) throws GamaRuntimeException {
+		final GamaProblem p = CPUtils.problemOf(scope, index);
+		if (table == null) throw GamaRuntimeException.error("A nil matrix was given to element_var", scope);
+		final int cols = table.getCols(scope);
+		final int[] line = new int[cols];
+		for (int c = 0; c < cols; c++) {
+			final Integer v = gama.api.gaml.types.Cast.asInt(scope, table.get(scope, c, row));
+			if (v == null) throw GamaRuntimeException
+					.error("nil found at row " + row + ", column " + c + " of a matrix", scope);
+			line[c] = v;
+		}
+		return p.register(p.getModel().element(p.newName("element"), line, index.asIntVar(scope), 0));
 	}
 
 	/**

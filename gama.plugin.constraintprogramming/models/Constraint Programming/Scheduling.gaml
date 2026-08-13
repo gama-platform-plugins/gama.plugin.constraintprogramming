@@ -24,8 +24,8 @@ global {
 		loop link over: precedences {
 			int before <- link[0];
 			int after <- link[1];
-			// start[before] + duration[before] <= start[after]
-			do post(arithm(starts[before], "-", starts[after], "<=", -durations[before]));
+			// a task cannot start before its predecessor is over
+			do post(starts[before] + durations[before] <= starts[after]);
 		}
 
 		// The completion times are views over the starts: they cost the solver neither a
