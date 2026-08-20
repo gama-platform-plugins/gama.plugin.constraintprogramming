@@ -1,7 +1,6 @@
 package gama.plugin.constraintprogramming;
 
 import org.chocosolver.solver.constraints.Constraint;
-import org.chocosolver.solver.expression.discrete.relational.ReExpression;
 
 import gama.annotations.doc;
 import gama.annotations.getter;
@@ -14,6 +13,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IValue;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
+import gama.plugin.constraintprogramming.terms.Relation;
 
 /**
  * A constraint over the variables of a {@link GamaProblem}. Wraps a Choco {@link Constraint}.
@@ -43,8 +43,8 @@ public class GamaConstraint implements IValue {
 	/** Whether the constraint has been posted. */
 	private boolean posted;
 
-	/** The relation this constraint was decomposed from, null when it comes from a global constraint. */
-	private final ReExpression expression;
+	/** The relation this constraint was compiled from, null when it comes from a global constraint. */
+	private final Relation relation;
 
 	/**
 	 * Instantiates a new constraint wrapper.
@@ -66,13 +66,13 @@ public class GamaConstraint implements IValue {
 	 *            the problem over whose variables the constraint is expressed
 	 * @param constraint
 	 *            the Choco constraint
-	 * @param expression
+	 * @param relation
 	 *            the relation it came from, or null
 	 */
-	public GamaConstraint(final GamaProblem problem, final Constraint constraint, final ReExpression expression) {
+	public GamaConstraint(final GamaProblem problem, final Constraint constraint, final Relation relation) {
 		this.problem = problem;
 		this.constraint = constraint;
-		this.expression = expression;
+		this.relation = relation;
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class GamaConstraint implements IValue {
 	 *
 	 * @return the relation, or null if the constraint does not come from an arithmetic expression
 	 */
-	public ReExpression getExpression() { return expression; }
+	public Relation getRelation() { return relation; }
 
 	/**
 	 * Gets the problem this constraint refers to.

@@ -1,6 +1,5 @@
 package gama.plugin.constraintprogramming;
 
-import org.chocosolver.solver.expression.discrete.arithmetic.ArExpression;
 import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.RealVar;
@@ -18,6 +17,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IValue;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
+import gama.plugin.constraintprogramming.terms.Term;
 
 /**
  * A decision variable of a {@link GamaProblem}. Wraps a Choco {@link Variable}, whatever its kind (integer, boolean, set or
@@ -57,11 +57,10 @@ public class GamaVariable implements IValue {
 	private Variable variable;
 
 	/**
-	 * The arithmetic expression this wrapper stands for, null when it wraps a declared variable. Expressions are kept
-	 * unevaluated so that the whole tree can be handed to Choco at once, which lets it choose how to turn it into
-	 * propagators rather than materialising one intermediate variable per operator.
+	 * The arithmetic term this wrapper stands for, null when it wraps a declared variable. Terms are kept unevaluated
+	 * and backend-neutral, so that the whole tree can be handed at once to whichever engine the problem uses.
 	 */
-	private final ArExpression expression;
+	private final Term term;
 
 	/**
 	 * Instantiates a new variable wrapper.
@@ -74,32 +73,39 @@ public class GamaVariable implements IValue {
 	public GamaVariable(final GamaProblem problem, final Variable variable) {
 		this.problem = problem;
 		this.variable = variable;
-		this.expression = null;
+		this.term = null;
 	}
 
 	/**
-	 * Instantiates a wrapper around an arithmetic expression that has not been materialised yet.
+	 * Instantiates a wrapper around an arithmetic term that has not been materialised yet.
 	 *
 	 * @param problem
-	 *            the problem the expression is expressed over
-	 * @param expression
-	 *            the Choco expression
+	 *            the problem the term is expressed over
+	 * @param term
+	 *            the term
 	 */
-	public GamaVariable(final GamaProblem problem, final ArExpression expression) {
+	public GamaVariable(final GamaProblem problem, final Term term) {
 		this.problem = problem;
 		this.variable = null;
-		this.expression = expression;
+		this.term = term;
 	}
+
+	/**
+	 * Gets the term this wrapper stands for.
+	 *
+	 * @return the term, or null if it wraps a declared variable
+	 */
+	public Term getTerm() { return term; }
 
 	/**
 	 * Whether this wrapper holds an expression that has not been turned into a variable yet.
 	 *
 	 * @return true if it is a pure expression
 	 */
-	public boolean isExpression() { return expression != null && variable == null; }
+	public boolean isExpression() { return term != null && variable == null; }
 
 	/**
-	 * Returns this as a Choco arithmetic expression, usable as an operand of the arithmetic and relational operators.
+	 * Returns this as a Choco arithmetic expression. Only called by the Choco compiler, on a leaf of a term tree.
 	 *
 	 * @param scope
 	 *            the current scope, used to report the error
@@ -107,8 +113,9 @@ public class GamaVariable implements IValue {
 	 * @throws GamaRuntimeException
 	 *             if this wraps a variable that is not an integer one
 	 */
-	public ArExpression asExpression(final IScope scope) throws GamaRuntimeException {
-		if (expression != null) return expression;
+	public org.chocosolver.solver.expression.discrete.arithmetic.ArExpression asChocoExpression(final IScope scope)
+			throws GamaRuntimeException {
+		if (term != null) return ChocoCompiler.compile(scope, problem, term);
 		if (variable instanceof IntVar iv) return iv;
 		throw GamaRuntimeException.error("The variable " + getVariableName() + " is a " + getKind()
 				+ " variable, and cannot take part in an arithmetic expression", scope);
@@ -139,10 +146,10 @@ public class GamaVariable implements IValue {
 	 */
 	public IntVar asIntVar(final IScope scope) throws GamaRuntimeException {
 		if (variable instanceof IntVar iv) return iv;
-		if (variable == null && expression != null) {
-			// The expression is materialised on first use and kept, so that reading it twice does not add a second
-			// variable and a second propagator to the problem.
-			final IntVar materialised = expression.intVar();
+		if (variable == null && term != null) {
+			// The term is materialised on first use and kept, so that reading it twice does not add a second variable
+			// and a second propagator to the problem.
+			final IntVar materialised = ChocoCompiler.compile(scope, problem, term).intVar();
 			variable = materialised;
 			problem.register(materialised);
 			return materialised;
@@ -242,7 +249,7 @@ public class GamaVariable implements IValue {
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
-		return variable == null ? expression.toString() : variable.toString();
+		return variable == null ? term.describe() : variable.toString();
 	}
 
 	@Override

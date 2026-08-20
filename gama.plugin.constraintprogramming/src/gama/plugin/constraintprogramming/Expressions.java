@@ -1,8 +1,5 @@
 package gama.plugin.constraintprogramming;
 
-import org.chocosolver.solver.expression.discrete.arithmetic.ArExpression;
-import org.chocosolver.solver.expression.discrete.relational.ReExpression;
-
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -10,6 +7,8 @@ import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.plugin.constraintprogramming.terms.Relation;
+import gama.plugin.constraintprogramming.terms.Term;
 
 /**
  * The arithmetic and relational operators of GAML, overloaded over the variables of a problem.
@@ -29,60 +28,87 @@ import gama.api.runtime.scope.IScope;
 public class Expressions {
 
 	/**
-	 * Returns an operand as a Choco expression.
+	 * Returns an operand as a term: the term it already stands for, or a reference to the declared variable.
 	 *
 	 * @param scope
 	 *            the current scope
 	 * @param v
 	 *            the operand
-	 * @return the expression
+	 * @return the term
 	 */
-	private static ArExpression expr(final IScope scope, final GamaVariable v) throws GamaRuntimeException {
+	private static Term term(final IScope scope, final GamaVariable v) throws GamaRuntimeException {
 		if (v == null) throw GamaRuntimeException.error("nil used in a constraint expression", scope);
-		return v.asExpression(scope);
+		return v.isExpression() ? v.getTerm() : new Term.Var(v);
 	}
 
 	/**
-	 * Returns a constant as a Choco expression, in the problem of the variable it is combined with.
-	 *
-	 * @param scope
-	 *            the current scope
-	 * @param v
-	 *            the variable giving the problem
-	 * @param k
-	 *            the constant
-	 * @return the constant, seen as an expression
-	 */
-	private static ArExpression constant(final IScope scope, final GamaVariable v, final int k)
-			throws GamaRuntimeException {
-		if (v == null) throw GamaRuntimeException.error("nil used in a constraint expression", scope);
-		return v.getProblem().getModel().intVar(k);
-	}
-
-	/**
-	 * Wraps a built expression.
+	 * Wraps a built term.
 	 *
 	 * @param v
 	 *            the variable giving the problem
-	 * @param e
-	 *            the expression
+	 * @param t
+	 *            the term
 	 * @return the GAML wrapper
 	 */
-	private static GamaVariable of(final GamaVariable v, final ArExpression e) {
-		return new GamaVariable(v.getProblem(), e);
+	private static GamaVariable of(final GamaVariable v, final Term t) {
+		return new GamaVariable(v.getProblem(), t);
 	}
 
 	/**
-	 * Wraps a built relation as a constraint.
-	 *
-	 * @param v
-	 *            the variable giving the problem
-	 * @param e
-	 *            the relation
-	 * @return the GAML constraint
+	 * Builds a binary term over two operands.
 	 */
-	private static GamaConstraint constraintOf(final GamaVariable v, final ReExpression e) {
-		return new GamaConstraint(v.getProblem(), e.decompose(), e);
+	private static GamaVariable bin(final IScope scope, final Term.Bin op, final GamaVariable a,
+			final GamaVariable b) throws GamaRuntimeException {
+		return of(a, new Term.Binary(op, term(scope, a), term(scope, b)));
+	}
+
+	/**
+	 * Builds a binary term over an operand and a constant on the right.
+	 */
+	private static GamaVariable binK(final IScope scope, final Term.Bin op, final GamaVariable a, final int k)
+			throws GamaRuntimeException {
+		return of(a, new Term.Binary(op, term(scope, a), new Term.Const(k)));
+	}
+
+	/**
+	 * Builds a binary term over a constant on the left and an operand.
+	 */
+	private static GamaVariable kBin(final IScope scope, final Term.Bin op, final int k, final GamaVariable b)
+			throws GamaRuntimeException {
+		return of(b, new Term.Binary(op, new Term.Const(k), term(scope, b)));
+	}
+
+	/**
+	 * Builds a relation between two operands, and compiles it for the engine of the problem.
+	 */
+	private static GamaConstraint rel(final IScope scope, final Relation.Rel op, final GamaVariable a,
+			final GamaVariable b) throws GamaRuntimeException {
+		return compile(scope, a, new Relation(op, term(scope, a), term(scope, b)));
+	}
+
+	/**
+	 * Builds a relation between an operand and a constant on the right.
+	 */
+	private static GamaConstraint relK(final IScope scope, final Relation.Rel op, final GamaVariable a, final int k)
+			throws GamaRuntimeException {
+		return compile(scope, a, new Relation(op, term(scope, a), new Term.Const(k)));
+	}
+
+	/**
+	 * Builds a relation between a constant on the left and an operand.
+	 */
+	private static GamaConstraint kRel(final IScope scope, final Relation.Rel op, final int k, final GamaVariable b)
+			throws GamaRuntimeException {
+		return compile(scope, b, new Relation(op, new Term.Const(k), term(scope, b)));
+	}
+
+	/**
+	 * Compiles a relation into a constraint, keeping the relation so that it can be recompiled differently later.
+	 */
+	private static GamaConstraint compile(final IScope scope, final GamaVariable v, final Relation r)
+			throws GamaRuntimeException {
+		final GamaProblem p = v.getProblem();
+		return new GamaConstraint(p, ChocoCompiler.compile(scope, p, r).decompose(), r);
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------
@@ -97,7 +123,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable plus(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).add(expr(scope, b)));
+		return bin(scope, Term.Bin.ADD, a, b);
 	}
 
 	/** Sum of a variable and a constant. */
@@ -106,7 +132,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable plus(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).add(k));
+		return binK(scope, Term.Bin.ADD, a, k);
 	}
 
 	/** Sum of a constant and a variable. */
@@ -115,7 +141,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable plus(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(b, expr(scope, b).add(k));
+		return kBin(scope, Term.Bin.ADD, k, b);
 	}
 
 	/** Difference of two variables or expressions. */
@@ -124,7 +150,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable minus(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).sub(expr(scope, b)));
+		return bin(scope, Term.Bin.SUB, a, b);
 	}
 
 	/** Difference of a variable and a constant. */
@@ -133,7 +159,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable minus(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).sub(k));
+		return binK(scope, Term.Bin.SUB, a, k);
 	}
 
 	/** Difference of a constant and a variable. */
@@ -142,7 +168,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable minus(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(b, constant(scope, b, k).sub(expr(scope, b)));
+		return kBin(scope, Term.Bin.SUB, k, b);
 	}
 
 	/** Opposite of a variable or expression. */
@@ -150,7 +176,7 @@ public class Expressions {
 	@doc (value = "Builds the expression 'minus the operand'.")
 	@no_test
 	public static GamaVariable negate(final IScope scope, final GamaVariable a) throws GamaRuntimeException {
-		return of(a, expr(scope, a).neg());
+		return of(a, new Term.Unary(Term.Un.NEG, term(scope, a)));
 	}
 
 	/** Product of two variables or expressions. */
@@ -160,7 +186,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable times(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).mul(expr(scope, b)));
+		return bin(scope, Term.Bin.MUL, a, b);
 	}
 
 	/** Product of a variable and a constant. */
@@ -169,7 +195,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable times(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).mul(k));
+		return binK(scope, Term.Bin.MUL, a, k);
 	}
 
 	/** Product of a constant and a variable. */
@@ -178,7 +204,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable times(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(b, expr(scope, b).mul(k));
+		return kBin(scope, Term.Bin.MUL, k, b);
 	}
 
 	/** Quotient of two variables or expressions. */
@@ -187,7 +213,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable divide(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).div(expr(scope, b)));
+		return bin(scope, Term.Bin.DIV, a, b);
 	}
 
 	/** Quotient of a variable by a constant. */
@@ -197,7 +223,7 @@ public class Expressions {
 	public static GamaVariable divide(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
 		if (k == 0) throw GamaRuntimeException.error("Division by zero in a constraint expression", scope);
-		return of(a, expr(scope, a).div(k));
+		return binK(scope, Term.Bin.DIV, a, k);
 	}
 
 	/** Quotient of a constant by a variable. */
@@ -206,7 +232,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable divide(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(b, constant(scope, b, k).div(expr(scope, b)));
+		return kBin(scope, Term.Bin.DIV, k, b);
 	}
 
 	/** Remainder of two variables or expressions. */
@@ -215,7 +241,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable modulo(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).mod(expr(scope, b)));
+		return bin(scope, Term.Bin.MOD, a, b);
 	}
 
 	/** Remainder of a variable by a constant. */
@@ -225,7 +251,7 @@ public class Expressions {
 	public static GamaVariable modulo(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
 		if (k == 0) throw GamaRuntimeException.error("Modulo by zero in a constraint expression", scope);
-		return of(a, expr(scope, a).mod(k));
+		return binK(scope, Term.Bin.MOD, a, k);
 	}
 
 	/** Remainder of a constant by a variable. */
@@ -234,7 +260,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable modulo(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(b, constant(scope, b, k).mod(expr(scope, b)));
+		return kBin(scope, Term.Bin.MOD, k, b);
 	}
 
 	/** Power of a variable by a constant exponent. */
@@ -243,7 +269,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable power(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).pow(k));
+		return binK(scope, Term.Bin.POW, a, k);
 	}
 
 	/** Power of a variable by a variable exponent. */
@@ -252,7 +278,7 @@ public class Expressions {
 	@no_test
 	public static GamaVariable power(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return of(a, expr(scope, a).pow(expr(scope, b)));
+		return bin(scope, Term.Bin.POW, a, b);
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------
@@ -275,7 +301,7 @@ public class Expressions {
 			return new GamaConstraint(real.getProblem(),
 					real.getProblem().getModel().eq(real.asRealVar(scope), integer.asIntVar(scope)));
 		}
-		return constraintOf(a, expr(scope, a).eq(expr(scope, b)));
+		return rel(scope, Relation.Rel.EQ, a, b);
 	}
 
 	/** Equality with a constant. */
@@ -284,7 +310,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint eq(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).eq(k));
+		return relK(scope, Relation.Rel.EQ, a, k);
 	}
 
 	/** Equality of a constant with an expression. */
@@ -293,7 +319,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint eq(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(b, expr(scope, b).eq(k));
+		return kRel(scope, Relation.Rel.EQ, k, b);
 	}
 
 	/** Difference of two variables or expressions. */
@@ -302,7 +328,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint neq(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).ne(expr(scope, b)));
+		return rel(scope, Relation.Rel.NE, a, b);
 	}
 
 	/** Difference from a constant. */
@@ -311,7 +337,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint neq(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).ne(k));
+		return relK(scope, Relation.Rel.NE, a, k);
 	}
 
 	/** Difference of a constant from an expression. */
@@ -320,7 +346,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint neq(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(b, expr(scope, b).ne(k));
+		return kRel(scope, Relation.Rel.NE, k, b);
 	}
 
 	/** Strict order between two variables or expressions. */
@@ -329,7 +355,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint lt(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).lt(expr(scope, b)));
+		return rel(scope, Relation.Rel.LT, a, b);
 	}
 
 	/** Strict upper bound. */
@@ -338,7 +364,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint lt(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).lt(k));
+		return relK(scope, Relation.Rel.LT, a, k);
 	}
 
 	/** Strict lower bound. */
@@ -347,7 +373,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint lt(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(b, expr(scope, b).gt(k));
+		return kRel(scope, Relation.Rel.LT, k, b);
 	}
 
 	/** Order between two variables or expressions. */
@@ -356,7 +382,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint le(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).le(expr(scope, b)));
+		return rel(scope, Relation.Rel.LE, a, b);
 	}
 
 	/** Upper bound. */
@@ -365,7 +391,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint le(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).le(k));
+		return relK(scope, Relation.Rel.LE, a, k);
 	}
 
 	/** Lower bound. */
@@ -374,7 +400,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint le(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(b, expr(scope, b).ge(k));
+		return kRel(scope, Relation.Rel.LE, k, b);
 	}
 
 	/** Strict order, reversed. */
@@ -383,7 +409,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint gt(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).gt(expr(scope, b)));
+		return rel(scope, Relation.Rel.GT, a, b);
 	}
 
 	/** Strict lower bound, reversed. */
@@ -392,7 +418,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint gt(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).gt(k));
+		return relK(scope, Relation.Rel.GT, a, k);
 	}
 
 	/** Strict upper bound, reversed. */
@@ -401,7 +427,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint gt(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(b, expr(scope, b).lt(k));
+		return kRel(scope, Relation.Rel.GT, k, b);
 	}
 
 	/** Order, reversed. */
@@ -410,7 +436,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint ge(final IScope scope, final GamaVariable a, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).ge(expr(scope, b)));
+		return rel(scope, Relation.Rel.GE, a, b);
 	}
 
 	/** Lower bound, reversed. */
@@ -419,7 +445,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint ge(final IScope scope, final GamaVariable a, final int k)
 			throws GamaRuntimeException {
-		return constraintOf(a, expr(scope, a).ge(k));
+		return relK(scope, Relation.Rel.GE, a, k);
 	}
 
 	/** Upper bound, reversed. */
@@ -428,7 +454,7 @@ public class Expressions {
 	@no_test
 	public static GamaConstraint ge(final IScope scope, final int k, final GamaVariable b)
 			throws GamaRuntimeException {
-		return constraintOf(b, expr(scope, b).le(k));
+		return kRel(scope, Relation.Rel.GE, k, b);
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------
@@ -455,11 +481,12 @@ public class Expressions {
 	public static GamaConstraint asTable(final IScope scope, final GamaConstraint constraint)
 			throws GamaRuntimeException {
 		if (constraint == null) throw GamaRuntimeException.error("Trying to tabulate a nil constraint", scope);
-		final ReExpression source = constraint.getExpression();
+		final Relation source = constraint.getRelation();
 		if (source == null) throw GamaRuntimeException.error("as_table only applies to a constraint built from an "
 				+ "arithmetic expression, and " + constraint.getConstraintName() + " is not one", scope);
 		try {
-			return new GamaConstraint(constraint.getProblem(), source.extension(), source);
+			return new GamaConstraint(constraint.getProblem(),
+					ChocoCompiler.compile(scope, constraint.getProblem(), source).extension(), source);
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error("Impossible to tabulate this constraint, most likely because the domains "
 					+ "of its variables are too large: " + e.getMessage(), scope);
