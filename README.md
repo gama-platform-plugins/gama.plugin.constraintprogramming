@@ -510,11 +510,11 @@ In `models/Constraint Programming/`:
 | Model | Archetype |
 |---|---|
 | `Cryptarithm.gaml` | pure satisfaction, SEND + MORE = MONEY |
-| `N-Queens.gaml` | placement, and enumeration of several solutions |
+| `N-Queens.gaml` | placement, shown on a grid |
 | `Knapsack.gaml` | selection under a budget |
-| `Graph Colouring.gaml` | partitioning, with symmetry breaking |
+| `Graph Colouring.gaml` | partitioning, with symmetry breaking, drawn as a coloured graph |
 | `Scheduling.gaml` | sequencing over time, minimising the makespan |
-| `Travelling Salesman.gaml` | routing, with `circuit` and `element_var` |
+| `Travelling Salesman.gaml` | routing, with the tour drawn between scattered cities |
 | `Task Assignment.gaml` | assignment over agents, with write-back into their attributes |
 | `Livestock Feeding.gaml` | a full linear model translated from Choco Java |
 | `Production Planning.gaml` | a linear model, run on either engine by changing one word |
