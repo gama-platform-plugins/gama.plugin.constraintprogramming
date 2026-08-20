@@ -1,5 +1,8 @@
 package gama.plugin.constraintprogramming.terms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import gama.plugin.constraintprogramming.GamaVariable;
 
 /**
@@ -51,12 +54,21 @@ public sealed interface Term {
 	record Var(GamaVariable variable) implements Term {}
 
 	/**
-	 * An integer constant.
+	 * A numeric constant. Held as a double because the data of a linear model, and of a file read in the MPS format in
+	 * particular, is not integral in general. An engine that only accepts integers checks it when compiling.
 	 *
 	 * @param value
 	 *            the value
 	 */
-	record Const(int value) implements Term {}
+	record Const(double value) implements Term {
+
+		/**
+		 * Whether this constant is a whole number, which is what an integer engine requires.
+		 *
+		 * @return true if the value is integral
+		 */
+		public boolean isIntegral() { return value == Math.rint(value) && !Double.isInfinite(value); }
+	}
 
 	/**
 	 * The application of a unary operator.
@@ -79,6 +91,32 @@ public sealed interface Term {
 	 *            the right operand
 	 */
 	record Binary(Bin op, Term left, Term right) implements Term {}
+
+	/**
+	 * Builds the sum of a list of terms as a balanced tree rather than a chain leaning to one side.
+	 *
+	 * <p>
+	 * The shape matters: everything that walks a term does so recursively, so a sum of ten thousand terms built as a
+	 * chain would be ten thousand frames deep, where a balanced tree is fourteen. Sums of that size are ordinary in a
+	 * model read from a file.
+	 * </p>
+	 *
+	 * @param terms
+	 *            the terms to add
+	 * @return their sum, or the constant zero if the list is empty
+	 */
+	static Term sum(final List<Term> terms) {
+		if (terms.isEmpty()) return new Const(0);
+		List<Term> level = terms;
+		while (level.size() > 1) {
+			final List<Term> next = new ArrayList<>((level.size() + 1) / 2);
+			for (int i = 0; i < level.size(); i += 2) {
+				next.add(i + 1 < level.size() ? new Binary(Bin.ADD, level.get(i), level.get(i + 1)) : level.get(i));
+			}
+			level = next;
+		}
+		return level.get(0);
+	}
 
 	/**
 	 * Whether this term is linear, that is, whether it only combines variables and constants through additions,
@@ -108,22 +146,51 @@ public sealed interface Term {
 	 * @return the term, written out
 	 */
 	default String describe() {
-		return switch (this) {
-			case Var v -> v.variable().getVariableName();
-			case Const c -> String.valueOf(c.value());
-			case Unary u -> switch (u.op()) {
-				case NEG -> "-(" + u.operand().describe() + ")";
-				case ABS -> "abs(" + u.operand().describe() + ")";
-			};
-			case Binary b -> "(" + b.left().describe() + " " + switch (b.op()) {
-				case ADD -> "+";
-				case SUB -> "-";
-				case MUL -> "*";
-				case DIV -> "/";
-				case MOD -> "mod";
-				case POW -> "^";
-			} + " " + b.right().describe() + ")";
-		};
+		final StringBuilder sb = new StringBuilder();
+		describe(sb, 0);
+		return sb.toString();
+	}
+
+	/** The number of characters beyond which a term is abbreviated, so that a message stays readable. */
+	int DESCRIPTION_BUDGET = 400;
+
+	/**
+	 * Writes the term out, giving up once the budget is spent. Bounded rather than complete, because a term read from
+	 * a file can mention thousands of variables and no message needs to carry them all.
+	 *
+	 * @param sb
+	 *            the buffer to write to
+	 * @param depth
+	 *            the current depth, used to stop on a term that is deeper than any message needs
+	 */
+	private void describe(final StringBuilder sb, final int depth) {
+		if (sb.length() > DESCRIPTION_BUDGET) {
+			if (!sb.toString().endsWith("...")) { sb.append("..."); }
+			return;
+		}
+		switch (this) {
+			case Var v -> sb.append(v.variable().getVariableName());
+			case Const c -> sb.append(c.isIntegral() ? String.valueOf((long) c.value()) : String.valueOf(c.value()));
+			case Unary u -> {
+				sb.append(u.op() == Un.NEG ? "-(" : "abs(");
+				u.operand().describe(sb, depth + 1);
+				sb.append(')');
+			}
+			case Binary b -> {
+				sb.append('(');
+				b.left().describe(sb, depth + 1);
+				sb.append(' ').append(switch (b.op()) {
+					case ADD -> "+";
+					case SUB -> "-";
+					case MUL -> "*";
+					case DIV -> "/";
+					case MOD -> "mod";
+					case POW -> "^";
+				}).append(' ');
+				b.right().describe(sb, depth + 1);
+				sb.append(')');
+			}
+		}
 	}
 
 }

@@ -144,13 +144,11 @@ public class Constraints {
 	 * @return the term
 	 */
 	private static Term weightedSum(final IList<GamaVariable> vars, final int[] coeffs) {
-		Term sum = null;
+		final java.util.List<Term> products = new java.util.ArrayList<>(coeffs.length);
 		for (int i = 0; i < coeffs.length; i++) {
-			final Term product =
-					new Term.Binary(Term.Bin.MUL, new Term.Const(coeffs[i]), new Term.Var(vars.get(i)));
-			sum = sum == null ? product : new Term.Binary(Term.Bin.ADD, sum, product);
+			products.add(new Term.Binary(Term.Bin.MUL, new Term.Const(coeffs[i]), new Term.Var(vars.get(i))));
 		}
-		return sum == null ? new Term.Const(0) : sum;
+		return Term.sum(products);
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------

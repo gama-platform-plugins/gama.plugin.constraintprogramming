@@ -85,6 +85,12 @@ public class GamaProblem implements IValue {
 	/** The constraints posted to this problem, in the order they were posted. */
 	private final List<GamaConstraint> posted = new ArrayList<>();
 
+	/** The objective declared with the problem, when it was read from a file, as a linear form. */
+	private gama.plugin.constraintprogramming.terms.Term objective;
+
+	/** Whether that objective has to be maximised. */
+	private boolean maximises;
+
 	/** The engines a problem can be solved with. */
 	public enum Backend {
 
@@ -179,6 +185,33 @@ public class GamaProblem implements IValue {
 	 * @return the constraints
 	 */
 	public List<GamaConstraint> getPosted() { return posted; }
+
+	/**
+	 * Declares the objective of the problem, as stated by the file it was read from.
+	 *
+	 * @param objective
+	 *            the variable to optimise
+	 * @param maximises
+	 *            whether it has to be maximised
+	 */
+	public void setObjective(final gama.plugin.constraintprogramming.terms.Term objective, final boolean maximises) {
+		this.objective = objective;
+		this.maximises = maximises;
+	}
+
+	/**
+	 * Gets the objective declared with the problem, if any.
+	 *
+	 * @return the objective, or null
+	 */
+	public gama.plugin.constraintprogramming.terms.Term getObjective() { return objective; }
+
+	/**
+	 * Whether the declared objective has to be maximised.
+	 *
+	 * @return true if it has to be maximised
+	 */
+	public boolean maximises() { return maximises; }
 
 	/**
 	 * Gets the underlying Choco model.

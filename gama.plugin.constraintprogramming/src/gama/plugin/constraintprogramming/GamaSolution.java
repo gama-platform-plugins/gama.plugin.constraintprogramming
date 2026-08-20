@@ -53,7 +53,7 @@ public class GamaSolution implements IValue {
 	private final Solution solution;
 
 	/** The values read from an engine that is not Choco, null otherwise. */
-	private final Map<String, Integer> values;
+	private final Map<String, Double> values;
 
 	/**
 	 * Instantiates a new solution.
@@ -77,7 +77,7 @@ public class GamaSolution implements IValue {
 	 * @param values
 	 *            the value of each variable, by name, or null if no solution was found
 	 */
-	public GamaSolution(final GamaProblem problem, final Map<String, Integer> values) {
+	public GamaSolution(final GamaProblem problem, final Map<String, Double> values) {
 		this.problem = problem;
 		this.solution = null;
 		this.values = values;
@@ -110,7 +110,10 @@ public class GamaSolution implements IValue {
 	 */
 	public Integer valueOf(final IScope scope, final GamaVariable variable) throws GamaRuntimeException {
 		if (variable == null) throw GamaRuntimeException.error("Trying to read the value of a nil variable", scope);
-		if (values != null) return values.get(variable.getVariableName());
+		if (values != null) {
+			final Double v = values.get(variable.getVariableName());
+			return v == null ? null : (int) Math.round(v);
+		}
 		if (solution == null) return null;
 		if (variable.getProblem() != problem) throw GamaRuntimeException.error("The variable "
 				+ variable.getVariableName() + " does not belong to the problem " + problem.getProblemName(), scope);
@@ -150,7 +153,7 @@ public class GamaSolution implements IValue {
 	public IMap<String, Integer> getValues() {
 		final IMap<String, Integer> result = GamaMapFactory.create(Types.STRING, Types.INT);
 		if (values != null) {
-			values.forEach(result::put);
+			values.forEach((n, v) -> result.put(n, (int) Math.round(v)));
 			return result;
 		}
 		if (solution == null) return result;
@@ -193,6 +196,24 @@ public class GamaSolution implements IValue {
 	 * @return true if the solution holds plain values
 	 */
 	public boolean isPlain() { return values != null; }
+
+	/**
+	 * Returns the value of a variable without rounding it, which matters for the continuous variables a linear engine
+	 * can carry.
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param variable
+	 *            the variable to read
+	 * @return the value, or null if no solution was found or the engine keeps no real value
+	 */
+	public Double realValueOf(final IScope scope, final GamaVariable variable) throws GamaRuntimeException {
+		if (variable == null) throw GamaRuntimeException.error("Trying to read the value of a nil variable", scope);
+		if (values != null) return values.get(variable.getVariableName());
+		if (solution == null) return null;
+		final Integer v = valueOf(scope, variable);
+		return v == null ? null : (double) v;
+	}
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {

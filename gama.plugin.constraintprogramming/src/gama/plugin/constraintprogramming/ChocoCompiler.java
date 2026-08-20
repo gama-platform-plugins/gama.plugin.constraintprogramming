@@ -35,7 +35,12 @@ public class ChocoCompiler {
 			throws GamaRuntimeException {
 		return switch (term) {
 			case Term.Var v -> v.variable().asChocoExpression(scope);
-			case Term.Const c -> problem.getModel().intVar(c.value());
+			case Term.Const c -> {
+				if (!c.isIntegral()) throw GamaRuntimeException.error("The constant " + c.value()
+						+ " is not a whole number, and the constraint engine only reasons over integers. Use the 'lp' "
+						+ "engine for this problem, or scale the data to integers.", scope);
+				yield problem.getModel().intVar((int) c.value());
+			}
 			case Term.Unary u -> switch (u.op()) {
 				case NEG -> compile(scope, problem, u.operand()).neg();
 				case ABS -> compile(scope, problem, u.operand()).abs();

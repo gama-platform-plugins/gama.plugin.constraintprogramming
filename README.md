@@ -117,6 +117,8 @@ problem p <- problem("my_problem");
 
 An engine that cannot represent a constraint says so when it is posted, naming the constraint and, for an arithmetic expression, the sub-expression responsible. The `lp` engine refuses global constraints, `!=`, and any product, quotient, remainder or power of two variables; it accepts int and bool variables only.
 
+The `lp` engine handles int, bool and continuous variables. It works in standard form, where every variable is shifted to be non-negative, so a variable with no lower bound is refused.
+
 > **Note:** the `lp` engine is currently backed by the linear solver bundled with Choco, which is an internal helper rather than a production solver: it uses a dense tableau, and its branch and bound writes the relaxation of each node to the standard output with no way to silence it. It is here to keep the multi-engine seam honest, not to run large models.
 
 ## Declaring variables
@@ -355,6 +357,23 @@ The remaining variables are handled by a default strategy appended behind, throu
 
 Three constraints on its use. It is decided at creation, since variables and propagators are built differently. It only covers constraints whose propagators can explain their deductions, and posting an unsupported one raises an error. And it encodes domains into boolean literals, so its cost grows with domain size rather than with the number of variables.
 
+## Reading a problem from a file
+
+| Operator | Returns | |
+|---|---|---|
+| `read_mps(string path)` | `problem` | reads an MPS file, to be solved by the linear engine |
+| `read_mps(string path, string engine)` | `problem` | the same, for a named engine |
+| `objective_of(problem)` | `string` | the objective the file declares, written out |
+| `maximises(problem)` | `bool` | whether that objective has to be maximised |
+| `optimize(problem)` | `solution` | solves for the objective the file carries, in its declared direction |
+| `objective_value(solution)` | `float` | the value that objective takes in a solution |
+
+MPS is the interchange format of linear and mixed integer programming. The sections read are NAME, OBJSENSE, ROWS, COLUMNS with its INTORG and INTEND markers, RHS, RANGES, BOUNDS and ENDATA, in both the fixed and the free layout. Variables, bounds, integrality, constraints and objective all come from the file; nothing is declared in the model.
+
+The objective of such a file is a linear form over the columns rather than a column of its own, so it is not returned as a `pb_variable`: `optimize` uses it directly and `objective_value` evaluates it against a solution.
+
+The path is resolved relative to the model, as everywhere else in GAML. Compressed files are not read: uncompress them first, whether they use gzip or the packed form that Netlib distributes for its own test set, which is a different format produced by its `emps` utility.
+
 ## Reading a solution
 
 | Operator | Returns |
@@ -362,6 +381,7 @@ Three constraints on its use. It is decided at creation, since variables and pro
 | `value_of(solution, pb_variable)` | `int`, or `nil` if no solution was found |
 | `values_of(solution, list<pb_variable>)` | `list<int>`, in the same order |
 | `set_value_of(solution, pb_variable)` | `list<int>`, the elements of a set variable |
+| `real_value_of(solution, pb_variable)` | `float`, the value without rounding, for the continuous variables a linear engine carries |
 
 ---
 
@@ -431,3 +451,5 @@ In `models/Constraint Programming/`:
 | `Travelling Salesman.gaml` | routing, with `circuit` and `element_var` |
 | `Task Assignment.gaml` | assignment over agents, with write-back into their attributes |
 | `Livestock Feeding.gaml` | a full linear model translated from Choco Java |
+| `Production Planning.gaml` | a linear model, run on either engine by changing one word |
+| `MPS File.gaml` | a problem read from a file rather than declared |

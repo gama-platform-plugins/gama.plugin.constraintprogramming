@@ -8,12 +8,14 @@ import org.chocosolver.lp.LinearProgram;
 import org.chocosolver.lp.MILP;
 import org.chocosolver.solver.variables.BoolVar;
 import org.chocosolver.solver.variables.IntVar;
+import org.chocosolver.solver.variables.RealVar;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.plugin.constraintprogramming.terms.LinearForm;
 import gama.plugin.constraintprogramming.terms.NonLinearException;
 import gama.plugin.constraintprogramming.terms.Relation;
+import gama.plugin.constraintprogramming.terms.Term;
 
 /**
  * Compiles a problem into a mixed integer linear program and solves it.
@@ -35,7 +37,7 @@ public class LinearCompiler {
 	private final Map<GamaVariable, Integer> index = new LinkedHashMap<>();
 
 	/** The shift applied to each variable, that is, its lower bound. */
-	private final Map<GamaVariable, Integer> shift = new LinkedHashMap<>();
+	private final Map<GamaVariable, Double> shift = new LinkedHashMap<>();
 
 	/** The program being built. */
 	private final MILP program = new MILP();
@@ -55,12 +57,31 @@ public class LinearCompiler {
 	 */
 	public static GamaSolution solve(final IScope scope, final GamaProblem problem, final GamaVariable objective,
 			final boolean maximise) throws GamaRuntimeException {
+		return solve(scope, problem, objective == null ? null : new Term.Var(objective), maximise);
+	}
+
+	/**
+	 * Solves a problem with the linear engine, optimising a linear form rather than a single variable, which is what a
+	 * file read in the MPS format gives.
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param problem
+	 *            the problem
+	 * @param objective
+	 *            the linear form to optimise, or null to look for any feasible assignment
+	 * @param maximise
+	 *            whether it has to be maximised
+	 * @return the solution found, possibly holding none
+	 */
+	public static GamaSolution solve(final IScope scope, final GamaProblem problem, final Term objective,
+			final boolean maximise) throws GamaRuntimeException {
 		final LinearCompiler compiler = new LinearCompiler();
 		compiler.declare(scope, problem);
 		compiler.constrain(scope, problem);
 		compiler.objective(scope, objective, maximise);
 		final LinearProgram.Status status = compiler.program.branchAndBound();
-		if (status != LinearProgram.Status.FEASIBLE) return new GamaSolution(problem, (Map<String, Integer>) null);
+		if (status != LinearProgram.Status.FEASIBLE) return new GamaSolution(problem, (Map<String, Double>) null);
 		return new GamaSolution(problem, compiler.read());
 	}
 
@@ -73,22 +94,47 @@ public class LinearCompiler {
 	 *            the problem
 	 */
 	private void declare(final IScope scope, final GamaProblem problem) throws GamaRuntimeException {
+		// Choco requires every variable of a linear program to exist before the first row is added, so the upper
+		// bounds are held back and written once the declarations are over.
+		final Map<Integer, Double> spans = new LinkedHashMap<>();
 		for (final GamaVariable v : problem.declaredVariables()) {
 			if (v.isExpression()) { continue; }
-			if (!(v.getVariable() instanceof IntVar iv)) throw GamaRuntimeException
-					.error("The linear engine only handles int and bool variables, and " + v.getVariableName() + " is a "
-							+ v.getKind() + " variable", scope);
-			final int lb = iv.getLB();
-			final int ub = iv.getUB();
-			final int i = v.getVariable() instanceof BoolVar ? program.makeBoolean() : program.makeInteger();
+			final double lb;
+			final double ub;
+			final int i;
+			switch (v.getVariable()) {
+				case BoolVar b -> {
+					lb = 0;
+					ub = 1;
+					i = program.makeBoolean();
+				}
+				case IntVar iv -> {
+					lb = iv.getLB();
+					ub = iv.getUB();
+					i = program.makeInteger();
+				}
+				case RealVar rv -> {
+					lb = rv.getLB();
+					ub = rv.getUB();
+					i = program.makeVariable();
+				}
+				default -> throw GamaRuntimeException.error("The linear engine does not handle "
+						+ v.getVariableName() + ", which is a " + v.getKind() + " variable", scope);
+			}
+			if (Double.isInfinite(lb)) throw GamaRuntimeException.error("The variable " + v.getVariableName()
+					+ " has no lower bound. The linear engine works in standard form, where every variable is shifted "
+					+ "to be non-negative, which needs a finite lower bound.", scope);
 			index.put(v, i);
 			shift.put(v, lb);
-			if (!(v.getVariable() instanceof BoolVar)) {
-				final HashMap<Integer, Double> row = new HashMap<>();
-				row.put(i, 1.0);
-				program.addLeq(row, (double) ub - lb);
+			if (!(v.getVariable() instanceof BoolVar) && !Double.isInfinite(ub) && ub - lb < Double.MAX_VALUE / 8) {
+				spans.put(i, ub - lb);
 			}
 		}
+		spans.forEach((i, span) -> {
+			final HashMap<Integer, Double> row = new HashMap<>();
+			row.put(i, 1.0);
+			program.addLeq(row, span);
+		});
 	}
 
 	/**
@@ -147,14 +193,24 @@ public class LinearCompiler {
 	 * @param maximise
 	 *            whether it has to be maximised
 	 */
-	private void objective(final IScope scope, final GamaVariable objective, final boolean maximise)
+	private void objective(final IScope scope, final Term objective, final boolean maximise)
 			throws GamaRuntimeException {
 		if (objective == null) return;
-		final Integer i = index.get(objective);
-		if (i == null) throw GamaRuntimeException.error(
-				"The objective " + objective.getVariableName() + " is not a declared variable of this problem", scope);
+		final LinearForm form;
+		try {
+			form = LinearForm.of(objective);
+		} catch (final NonLinearException e) {
+			throw GamaRuntimeException
+					.error("The objective " + objective.describe() + " is not linear: " + e.getMessage(), scope);
+		}
 		final HashMap<Integer, Double> row = new HashMap<>();
-		row.put(i, 1.0);
+		for (final Map.Entry<GamaVariable, Double> e : form.getCoefficients().entrySet()) {
+			final Integer i = index.get(e.getKey());
+			if (i == null) throw GamaRuntimeException.error("The objective mentions " + e.getKey().getVariableName()
+					+ ", which is not a declared variable of this problem", scope);
+			row.merge(i, e.getValue(), Double::sum);
+		}
+		if (row.isEmpty()) return;
 		program.setObjective(maximise, row);
 	}
 
@@ -163,10 +219,9 @@ public class LinearCompiler {
 	 *
 	 * @return the value of each variable
 	 */
-	private Map<String, Integer> read() {
-		final Map<String, Integer> values = new LinkedHashMap<>();
-		index.forEach((v, i) -> values.put(v.getVariableName(),
-				(int) Math.round(program.value(i)) + shift.get(v)));
+	private Map<String, Double> read() {
+		final Map<String, Double> values = new LinkedHashMap<>();
+		index.forEach((v, i) -> values.put(v.getVariableName(), program.value(i) + shift.get(v)));
 		return values;
 	}
 

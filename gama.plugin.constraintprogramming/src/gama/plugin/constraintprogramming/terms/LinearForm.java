@@ -93,7 +93,7 @@ public class LinearForm {
 	 */
 	private static Double constantValueOf(final Term term) {
 		return switch (term) {
-			case Term.Const c -> (double) c.value();
+			case Term.Const c -> c.value();
 			case Term.Var v -> null;
 			case Term.Unary u -> {
 				final Double inner = constantValueOf(u.operand());
