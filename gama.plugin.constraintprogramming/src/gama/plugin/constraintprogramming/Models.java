@@ -55,7 +55,7 @@ public class Models {
 			throws GamaRuntimeException {
 		final GamaProblem.Backend b = GamaProblem.Backend.named(engine);
 		if (b == null) throw GamaRuntimeException
-				.error("Unknown engine '" + engine + "'. Expected one of: choco, choco_lcg, lp", scope);
+				.error("Unknown engine '" + engine + "'. Expected one of: choco, choco_lcg, lp, highs", scope);
 		return MpsReader.read(scope, path, b);
 	}
 
@@ -110,7 +110,10 @@ public class Models {
 		if (objective == null) throw GamaRuntimeException.error("The problem " + problem.getProblemName()
 				+ " carries no objective. Use minimize or maximize, naming the variable to optimise.", scope);
 		if (!problem.isLinear()) throw GamaRuntimeException.error("Optimising the objective carried by a file is only "
-				+ "available with the linear engine for now", scope);
+				+ "available with a linear engine for now", scope);
+		if (problem.getBackend() == GamaProblem.Backend.HIGHS)
+			return gama.plugin.constraintprogramming.highs.HighsCompiler.solve(scope, problem, objective,
+					problem.maximises(), null);
 		return LinearCompiler.solve(scope, problem, objective, problem.maximises());
 	}
 

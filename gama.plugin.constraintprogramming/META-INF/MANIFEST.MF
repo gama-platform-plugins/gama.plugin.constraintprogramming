@@ -7,10 +7,17 @@ Export-Package: gama.plugin.constraintprogramming,
  gaml.additions.constraintprogramming
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ClassPath: .,
- lib/choco-solver-6.0.1-light.jar
+ lib/choco-solver-6.0.1-light.jar,
+ lib/jna-5.18.1.jar
 Bundle-ActivationPolicy: lazy
 Require-Bundle: gama.dependencies,
  gama.annotations,
  gama.processor,
  gama.api
+Eclipse-BundleShape: dir
+Bundle-NativeCode: native/win32/x86_64/highs.dll;osname=Win32;processor=x86_64,
+ native/linux/x86_64/libhighs.so;osname=Linux;processor=x86_64,
+ native/macosx/x86_64/libhighs.dylib;osname=MacOS;processor=x86_64,
+ native/macosx/aarch64/libhighs.dylib;osname=MacOS;processor=aarch64,
+ *
 Automatic-Module-Name: gama.plugin.constraintprogramming

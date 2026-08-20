@@ -51,8 +51,11 @@ public class Searches {
 			final boolean maximise, final Double within) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to search a nil problem", scope);
 		if (problem.isLinear()) {
-			// The linear engine builds its program from the recorded relations and solves it in one go: there is no
-			// incremental search to interrupt, and no time budget to honour.
+			// A linear engine builds its program from the recorded relations and solves it in one go: there is no
+			// incremental search to interrupt.
+			if (problem.getBackend() == GamaProblem.Backend.HIGHS) return gama.plugin.constraintprogramming.highs
+					.HighsCompiler.solve(scope, problem, objective == null ? null
+							: new gama.plugin.constraintprogramming.terms.Term.Var(objective), maximise, within);
 			return LinearCompiler.solve(scope, problem, objective, maximise);
 		}
 		final Solver solver = problem.getSolver();

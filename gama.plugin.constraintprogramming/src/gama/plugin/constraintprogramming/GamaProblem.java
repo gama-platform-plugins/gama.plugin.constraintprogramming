@@ -42,11 +42,11 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = "nb_variables",
 				type = IType.INT,
-				doc = { @doc ("The number of variables currently declared in the problem") }),
+				doc = { @doc ("The number of variables declared in the problem. Counts the variables of the model, not the intermediate ones a constraint engine may create while decomposing an expression") }),
 		@variable (
 				name = "nb_constraints",
 				type = IType.INT,
-				doc = { @doc ("The number of constraints currently posted in the problem") }),
+				doc = { @doc ("The number of constraints posted to the problem. Counted by the plugin rather than by an engine, so it reads the same whichever engine solves the problem") }),
 		@variable (
 				name = "variables",
 				type = IType.LIST,
@@ -55,7 +55,7 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = "solutions",
 				type = IType.INT,
-				doc = { @doc ("The number of solutions found so far by the last search") }),
+				doc = { @doc ("The number of solutions found so far by the last search. Only the constraint engine reports it; a linear engine leaves it at zero") }),
 		@variable (
 				name = "search_time",
 				type = IType.FLOAT,
@@ -63,11 +63,11 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = "nodes",
 				type = IType.INT,
-				doc = { @doc ("The number of nodes explored during the last search") }),
+				doc = { @doc ("The number of nodes explored during the last search. Only the constraint engine reports it") }),
 		@variable (
 				name = "fails",
 				type = IType.INT,
-				doc = { @doc ("The number of failures encountered during the last search") }) })
+				doc = { @doc ("The number of failures encountered during the last search. Only the constraint engine reports it") }) })
 public class GamaProblem implements IValue {
 
 	/** The underlying Choco model. */
@@ -101,7 +101,10 @@ public class GamaProblem implements IValue {
 		CHOCO_LCG("choco_lcg"),
 
 		/** The linear engine bundled with Choco. Only accepts linear constraints. */
-		LP("lp");
+		LP("lp"),
+
+		/** HiGHS, a linear and mixed integer engine, loaded from a binary shipped with the plugin. */
+		HIGHS("highs");
 
 		/** The name used in GAML. */
 		private final String label;
@@ -167,7 +170,7 @@ public class GamaProblem implements IValue {
 	 *
 	 * @return true if the engine is linear
 	 */
-	public boolean isLinear() { return backend == Backend.LP; }
+	public boolean isLinear() { return backend == Backend.LP || backend == Backend.HIGHS; }
 
 	/**
 	 * Records a constraint as posted.
@@ -278,10 +281,10 @@ public class GamaProblem implements IValue {
 	public String getProblemName() { return model.getName(); }
 
 	@getter ("nb_variables")
-	public int getNbVariables() { return model.getNbVars(); }
+	public int getNbVariables() { return declared.size(); }
 
 	@getter ("nb_constraints")
-	public int getNbConstraints() { return model.getNbCstrs(); }
+	public int getNbConstraints() { return posted.size(); }
 
 	@getter ("variables")
 	public IList<GamaVariable> getVariables() {

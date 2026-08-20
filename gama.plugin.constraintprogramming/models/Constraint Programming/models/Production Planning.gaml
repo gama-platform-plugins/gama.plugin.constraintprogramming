@@ -22,8 +22,9 @@ global {
 	int machine_capacity <- 100;
 	int material_stock <- 90;
 
-	// "lp" for the linear engine, "choco" for the constraint engine
-	string engine <- "lp" among: ["lp", "choco"];
+	// "highs" for the native linear solver, "lp" for the one bundled with Choco, "choco" for the
+	// constraint engine. The model text is the same for all three.
+	string engine <- "highs" among: ["highs", "lp", "choco"];
 
 	init {
 		problem p <- problem("production", engine);

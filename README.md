@@ -113,11 +113,22 @@ problem p <- problem("my_problem");
 |---|---|
 | `choco` | the constraint engine, the default, handles everything the plugin exposes |
 | `choco_lcg` | the same with lazy clause generation, see [Tuning the search](#tuning-the-search) |
-| `lp` | the linear engine, only accepts linear constraints |
+| `lp` | the linear engine bundled with Choco, only accepts linear constraints |
+| `highs` | HiGHS, a linear and mixed integer solver shipped with the plugin as a native binary |
 
 An engine that cannot represent a constraint says so when it is posted, naming the constraint and, for an arithmetic expression, the sub-expression responsible. The `lp` engine refuses global constraints, `!=`, and any product, quotient, remainder or power of two variables; it accepts int and bool variables only.
 
-The `lp` engine handles int, bool and continuous variables. It works in standard form, where every variable is shifted to be non-negative, so a variable with no lower bound is refused.
+Both linear engines handle int, bool and continuous variables. The `lp` engine works in standard form, where every variable is shifted to be non-negative, so a variable with no lower bound is refused; `highs` takes the bounds as they are, infinite ones included.
+
+### HiGHS
+
+`highs` is the engine to use on a linear model of any size. It is a native solver, shipped with the plugin under `native/<os>/<arch>/` and loaded from a copy made in a temporary directory, so nothing has to be added to the `PATH` of the machine nor to `java.library.path`.
+
+Loading is attempted once, on the first problem created with this engine. When it fails, for want of a binary for the platform or of a dependency of that binary, the engine reports why instead of letting a link error surface in the middle of a simulation, and the model can fall back to another engine.
+
+Measured on `80bau3b`, one of the Netlib test problems, at 9799 columns and 2262 rows: read in 493 ms, solved in 655 ms, giving 987224.1924, the published optimum. The `lp` engine does not finish on a model of that size.
+
+Binaries are currently shipped for Windows on x86_64 only. Adding a platform means dropping the shared library under `native/<os>/<arch>/` and declaring it in `Bundle-NativeCode`; nothing in the code changes.
 
 > **Note:** the `lp` engine is currently backed by the linear solver bundled with Choco, which is an internal helper rather than a production solver: it uses a dense tableau, and its branch and bound writes the relaxation of each node to the standard output with no way to silence it. It is here to keep the multi-engine seam honest, not to run large models.
 

@@ -46,7 +46,7 @@ public class Strategies {
 			throws GamaRuntimeException {
 		final GamaProblem.Backend b = GamaProblem.Backend.named(backend);
 		if (b == null) throw GamaRuntimeException.error("Unknown engine '" + backend
-				+ "'. Expected one of: choco, choco_lcg, lp", scope);
+				+ "'. Expected one of: choco, choco_lcg, lp, highs", scope);
 		return new GamaProblem(name, b);
 	}
 

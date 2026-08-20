@@ -16,14 +16,17 @@ global {
 
 	// The path is resolved relative to the model. Compressed files are not read: uncompress them
 	// first, whether they use gzip or the packed form Netlib distributes for its own test set.
-	string file_path <- "../includes/testprob.mps"
+	string file_path <- "../includes/big_lp_problem-80bau3b.mps"
 		among: ["../includes/testprob.mps", "../includes/big_lp_problem-80bau3b.mps"];
+
+	// "highs" is the only engine that copes with a file of any size
+	string engine <- "highs" among: ["highs", "lp"];
 
 	// Above this many variables, the values are counted rather than listed
 	int listing_limit <- 20;
 
 	init {
-		problem p <- read_mps(file_path);
+		problem p <- read_mps(file_path, engine);
 
 		write "problem " + p.name + " read from " + file_path;
 		write "  " + length(p.variables) + " variables, " + p.nb_constraints + " constraints";
@@ -50,4 +53,5 @@ global {
 
 experiment read_and_solve type: gui title: "Solve an MPS file" {
 	parameter "File" var: file_path;
+	parameter "Engine" var: engine;
 }
