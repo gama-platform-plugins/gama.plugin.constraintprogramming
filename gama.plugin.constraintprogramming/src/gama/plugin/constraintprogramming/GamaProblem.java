@@ -1,6 +1,9 @@
 package gama.plugin.constraintprogramming;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.chocosolver.solver.Model;
@@ -76,6 +79,51 @@ public class GamaProblem implements IValue {
 	/** Counter used to generate unique names for anonymous (derived) variables. */
 	private int anonymous;
 
+	/** The engine this problem is solved with. */
+	private final Backend backend;
+
+	/** The constraints posted to this problem, in the order they were posted. */
+	private final List<GamaConstraint> posted = new ArrayList<>();
+
+	/** The engines a problem can be solved with. */
+	public enum Backend {
+
+		/** Choco, the constraint engine. Handles everything the plugin exposes. */
+		CHOCO("choco"),
+
+		/** Choco with lazy clause generation. */
+		CHOCO_LCG("choco_lcg"),
+
+		/** The linear engine bundled with Choco. Only accepts linear constraints. */
+		LP("lp");
+
+		/** The name used in GAML. */
+		private final String label;
+
+		Backend(final String label) {
+			this.label = label;
+		}
+
+		/**
+		 * Gets the name used in GAML.
+		 *
+		 * @return the label
+		 */
+		public String getLabel() { return label; }
+
+		/**
+		 * Returns the engine designated by a name.
+		 *
+		 * @param name
+		 *            the name
+		 * @return the engine, or null if no engine bears that name
+		 */
+		public static Backend named(final String name) {
+			for (final Backend b : values()) { if (b.label.equals(name)) return b; }
+			return null;
+		}
+	}
+
 	/**
 	 * Instantiates a new problem.
 	 *
@@ -83,22 +131,54 @@ public class GamaProblem implements IValue {
 	 *            the name of the problem
 	 */
 	public GamaProblem(final String name) {
-		model = new Model(name == null ? "problem" : name);
+		this(name, Backend.CHOCO);
 	}
 
 	/**
-	 * Instantiates a new problem, optionally with lazy clause generation enabled. LCG makes the solver learn a clause
-	 * from every conflict it meets, the way a modern SAT solver does. It has to be decided here rather than later,
-	 * because the variables and the propagators are built differently.
+	 * Instantiates a new problem solved with a given engine.
 	 *
 	 * @param name
 	 *            the name of the problem
-	 * @param lcg
-	 *            whether to enable lazy clause generation
+	 * @param backend
+	 *            the engine
 	 */
-	public GamaProblem(final String name, final boolean lcg) {
-		model = new Model(name == null ? "problem" : name, new SettingsBuilder().setLCG(lcg).build());
+	public GamaProblem(final String name, final Backend backend) {
+		this.backend = backend;
+		final String actual = name == null ? "problem" : name;
+		model = backend == Backend.CHOCO_LCG
+				? new Model(actual, new SettingsBuilder().setLCG(true).build()) : new Model(actual);
 	}
+
+	/**
+	 * Gets the engine this problem is solved with.
+	 *
+	 * @return the engine
+	 */
+	public Backend getBackend() { return backend; }
+
+	/**
+	 * Whether this problem is solved by a linear engine, which only accepts linear constraints.
+	 *
+	 * @return true if the engine is linear
+	 */
+	public boolean isLinear() { return backend == Backend.LP; }
+
+	/**
+	 * Records a constraint as posted.
+	 *
+	 * @param constraint
+	 *            the constraint
+	 */
+	public void recordPosted(final GamaConstraint constraint) {
+		posted.add(constraint);
+	}
+
+	/**
+	 * Gets the constraints posted so far, in order.
+	 *
+	 * @return the constraints
+	 */
+	public List<GamaConstraint> getPosted() { return posted; }
 
 	/**
 	 * Gets the underlying Choco model.
@@ -126,6 +206,14 @@ public class GamaProblem implements IValue {
 		declared.put(v.getName(), wrapper);
 		return wrapper;
 	}
+
+	/**
+	 * Returns the variables declared in this problem, in declaration order, as a plain collection. Used by the engines,
+	 * which have no reason to pay for a GAML list on every solve.
+	 *
+	 * @return the declared variables
+	 */
+	public Collection<GamaVariable> declaredVariables() { return declared.values(); }
 
 	/**
 	 * Returns the variable declared under this name, or null.

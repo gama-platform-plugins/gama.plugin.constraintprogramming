@@ -107,8 +107,7 @@ public class Expressions {
 	 */
 	private static GamaConstraint compile(final IScope scope, final GamaVariable v, final Relation r)
 			throws GamaRuntimeException {
-		final GamaProblem p = v.getProblem();
-		return new GamaConstraint(p, ChocoCompiler.compile(scope, p, r).decompose(), r);
+		return new GamaConstraint(v.getProblem(), r);
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------

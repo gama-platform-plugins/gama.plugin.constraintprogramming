@@ -50,6 +50,11 @@ public class Searches {
 	private static GamaSolution run(final IScope scope, final GamaProblem problem, final GamaVariable objective,
 			final boolean maximise, final Double within) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to search a nil problem", scope);
+		if (problem.isLinear()) {
+			// The linear engine builds its program from the recorded relations and solves it in one go: there is no
+			// incremental search to interrupt, and no time budget to honour.
+			return LinearCompiler.solve(scope, problem, objective, maximise);
+		}
 		final Solver solver = problem.getSolver();
 		final Criterion interrupted = scope::interrupted;
 		solver.addStopCriterion(interrupted);
@@ -239,6 +244,7 @@ public class Searches {
 	public static int hintFrom(final IScope scope, final GamaProblem problem, final GamaSolution solution)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to hint a nil problem", scope);
+		if (problem.isLinear()) return 0;
 		if (solution == null || !solution.exists()) return 0;
 		int applied = 0;
 		final Solver solver = problem.getSolver();
@@ -326,6 +332,8 @@ public class Searches {
 	private static IList<GamaSolution> enumerate(final IScope scope, final GamaProblem problem, final int limit)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to search a nil problem", scope);
+		if (problem.isLinear()) throw GamaRuntimeException
+				.error("Enumerating solutions is only available with the 'choco' engine", scope);
 		final IList<GamaSolution> result = GamaListFactory.create(Types.get(GamaSolutionType.id));
 		final Solver solver = problem.getSolver();
 		final Criterion interrupted = scope::interrupted;

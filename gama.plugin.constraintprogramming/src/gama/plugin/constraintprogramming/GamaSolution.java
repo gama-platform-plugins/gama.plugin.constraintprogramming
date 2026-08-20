@@ -1,5 +1,7 @@
 package gama.plugin.constraintprogramming;
 
+import java.util.Map;
+
 import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
@@ -47,8 +49,11 @@ public class GamaSolution implements IValue {
 	/** The problem this solution belongs to. */
 	private final GamaProblem problem;
 
-	/** The recorded Choco solution, or null if no solution was found. */
+	/** The recorded Choco solution, null when the solution comes from another engine or when there is none. */
 	private final Solution solution;
+
+	/** The values read from an engine that is not Choco, null otherwise. */
+	private final Map<String, Integer> values;
 
 	/**
 	 * Instantiates a new solution.
@@ -61,6 +66,21 @@ public class GamaSolution implements IValue {
 	public GamaSolution(final GamaProblem problem, final Solution solution) {
 		this.problem = problem;
 		this.solution = solution;
+		this.values = null;
+	}
+
+	/**
+	 * Instantiates a solution from the values produced by an engine that has no solution object of its own.
+	 *
+	 * @param problem
+	 *            the problem
+	 * @param values
+	 *            the value of each variable, by name, or null if no solution was found
+	 */
+	public GamaSolution(final GamaProblem problem, final Map<String, Integer> values) {
+		this.problem = problem;
+		this.solution = null;
+		this.values = values;
 	}
 
 	/**
@@ -89,8 +109,9 @@ public class GamaSolution implements IValue {
 	 *             if the variable does not belong to the problem or is not an int variable
 	 */
 	public Integer valueOf(final IScope scope, final GamaVariable variable) throws GamaRuntimeException {
-		if (solution == null) return null;
 		if (variable == null) throw GamaRuntimeException.error("Trying to read the value of a nil variable", scope);
+		if (values != null) return values.get(variable.getVariableName());
+		if (solution == null) return null;
 		if (variable.getProblem() != problem) throw GamaRuntimeException.error("The variable "
 				+ variable.getVariableName() + " does not belong to the problem " + problem.getProblemName(), scope);
 		try {
@@ -113,6 +134,8 @@ public class GamaSolution implements IValue {
 	 *             if the variable is not a set variable
 	 */
 	public IList<Integer> setValueOf(final IScope scope, final GamaVariable variable) throws GamaRuntimeException {
+		if (values != null) throw GamaRuntimeException
+				.error("Set variables are only available with the 'choco' engine", scope);
 		if (solution == null) return null;
 		final SetVar sv = variable.asSetVar(scope);
 		final IList<Integer> result = GamaListFactory.create(Types.INT);
@@ -121,11 +144,15 @@ public class GamaSolution implements IValue {
 	}
 
 	@getter ("exists")
-	public boolean exists() { return solution != null; }
+	public boolean exists() { return solution != null || values != null; }
 
 	@getter ("values")
 	public IMap<String, Integer> getValues() {
 		final IMap<String, Integer> result = GamaMapFactory.create(Types.STRING, Types.INT);
+		if (values != null) {
+			values.forEach(result::put);
+			return result;
+		}
 		if (solution == null) return result;
 		for (final Variable v : problem.getModel().getVars()) {
 			if (v instanceof IntVar iv) {
@@ -144,6 +171,7 @@ public class GamaSolution implements IValue {
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
+		if (values != null) return values.toString();
 		if (solution == null) return "no solution";
 		return solution.toString();
 	}
@@ -157,6 +185,14 @@ public class GamaSolution implements IValue {
 	public IValue copy(final IScope scope) throws GamaRuntimeException {
 		return solution == null ? this : new GamaSolution(problem, solution.copySolution());
 	}
+
+	/**
+	 * Whether this solution was produced by an engine other than Choco, in which case only the values of the int and
+	 * bool variables are available.
+	 *
+	 * @return true if the solution holds plain values
+	 */
+	public boolean isPlain() { return values != null; }
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {

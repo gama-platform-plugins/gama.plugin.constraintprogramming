@@ -35,15 +35,19 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Creates a problem, enabling lazy clause generation when the second operand is true. LCG makes the solver learn a clause from every conflict it meets, the way a modern SAT solver does, instead of forgetting it and running into the same dead end again.",
-			comment = "This has to be decided at creation, since variables and propagators are built differently. It is the strongest lever available on a problem that explores a very large number of nodes without converging, but it only covers the constraints whose propagators are able to explain their deductions: posting an unsupported constraint on an LCG problem raises an error.",
+			value = "Creates a problem solved by the engine named as second operand. Accepted names: 'choco', the constraint engine, which handles everything the plugin exposes; 'choco_lcg', the same with lazy clause generation, where the solver derives a clause from each conflict and keeps it; and 'lp', the linear engine, which only accepts linear constraints but settles a linear model in one go where a constraint engine would search.",
+			comment = "The engine is decided at creation, since variables and constraints are built differently. Nothing else in a model changes: the same declarations, the same expressions and the same way of reading a solution work on every engine, and an engine that cannot represent a constraint says so when it is posted.",
 			examples = { @example (
-					value = "problem p <- problem(\"my_problem\", true);",
+					value = "problem p <- problem(\"my_problem\", \"lp\");",
 					isExecutable = false) },
 			see = { "use_strategy", "use_restarts" })
 	@no_test
-	public static GamaProblem lcgProblem(final IScope scope, final String name, final boolean lcg) {
-		return new GamaProblem(name, lcg);
+	public static GamaProblem problemWithBackend(final IScope scope, final String name, final String backend)
+			throws GamaRuntimeException {
+		final GamaProblem.Backend b = GamaProblem.Backend.named(backend);
+		if (b == null) throw GamaRuntimeException.error("Unknown engine '" + backend
+				+ "'. Expected one of: choco, choco_lcg, lp", scope);
+		return new GamaProblem(name, b);
 	}
 
 	/**

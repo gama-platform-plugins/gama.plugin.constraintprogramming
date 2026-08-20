@@ -107,7 +107,17 @@ Casting a string to `problem` creates a new, empty one.
 problem p <- problem("my_problem");
 ```
 
-`problem(string, bool)` creates one with lazy clause generation enabled, which is described under [Tuning the search](#tuning-the-search).
+`problem(string name, string engine)` creates one solved by a named engine. The rest of a model is unchanged whatever the engine: the same declarations, the same expressions and the same way of reading a solution.
+
+| Engine | |
+|---|---|
+| `choco` | the constraint engine, the default, handles everything the plugin exposes |
+| `choco_lcg` | the same with lazy clause generation, see [Tuning the search](#tuning-the-search) |
+| `lp` | the linear engine, only accepts linear constraints |
+
+An engine that cannot represent a constraint says so when it is posted, naming the constraint and, for an arithmetic expression, the sub-expression responsible. The `lp` engine refuses global constraints, `!=`, and any product, quotient, remainder or power of two variables; it accepts int and bool variables only.
+
+> **Note:** the `lp` engine is currently backed by the linear solver bundled with Choco, which is an internal helper rather than a production solver: it uses a dense tableau, and its branch and bound writes the relaxation of each node to the standard output with no way to silence it. It is here to keep the multi-engine seam honest, not to run large models.
 
 ## Declaring variables
 
@@ -306,7 +316,7 @@ None of the operators below changes which solutions a problem has. They change t
 | `with_best_bound(problem)` | `problem` | try the bound that looks best for the objective |
 | `use_restarts(problem, string policy, int cutoff)` | `problem` | restart the search periodically |
 | `record_nogoods(problem)` | `problem` | remember across restarts what has been proven impossible |
-| `problem(string name, bool lcg)` | `problem` | create a problem with lazy clause generation |
+| `problem(string name, string engine)` | `problem` | create a problem solved by a named engine |
 
 ### Branching strategies
 
@@ -341,7 +351,7 @@ The remaining variables are handled by a default strategy appended behind, throu
 
 ### Lazy clause generation
 
-`problem(name, true)` enables LCG: the solver derives a clause from each conflict and keeps it, instead of only backtracking.
+`problem(name, "choco_lcg")` enables LCG: the solver derives a clause from each conflict and keeps it, instead of only backtracking.
 
 Three constraints on its use. It is decided at creation, since variables and propagators are built differently. It only covers constraints whose propagators can explain their deductions, and posting an unsupported one raises an error. And it encodes domains into boolean literals, so its cost grows with domain size rather than with the number of variables.
 

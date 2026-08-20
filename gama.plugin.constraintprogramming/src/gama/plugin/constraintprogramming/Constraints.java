@@ -14,6 +14,8 @@ import gama.api.runtime.scope.IScope;
 import gama.api.gaml.types.Cast;
 import gama.api.types.list.IList;
 import gama.api.types.matrix.IMatrix;
+import gama.plugin.constraintprogramming.terms.Relation;
+import gama.plugin.constraintprogramming.terms.Term;
 
 /**
  * The operators that build constraints over the variables of a problem.
@@ -118,6 +120,39 @@ public class Constraints {
 		return new GamaConstraint(CPUtils.problemOf(scope, vars), c);
 	}
 
+	/**
+	 * Translates the comparison written as a string by arithm and scalar into a neutral one.
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param op
+	 *            the operator, as written in the model
+	 * @return the comparison
+	 */
+	private static Relation.Rel relationOf(final IScope scope, final String op) throws GamaRuntimeException {
+		for (final Relation.Rel r : Relation.Rel.values()) { if (r.getSymbol().equals(op)) return r; }
+		throw GamaRuntimeException.error("Unknown comparison '" + op + "'. Expected one of: = != < <= > >=", scope);
+	}
+
+	/**
+	 * Builds the term for a weighted sum of variables.
+	 *
+	 * @param vars
+	 *            the variables
+	 * @param coeffs
+	 *            their coefficients
+	 * @return the term
+	 */
+	private static Term weightedSum(final IList<GamaVariable> vars, final int[] coeffs) {
+		Term sum = null;
+		for (int i = 0; i < coeffs.length; i++) {
+			final Term product =
+					new Term.Binary(Term.Bin.MUL, new Term.Const(coeffs[i]), new Term.Var(vars.get(i)));
+			sum = sum == null ? product : new Term.Binary(Term.Bin.ADD, sum, product);
+		}
+		return sum == null ? new Term.Const(0) : sum;
+	}
+
 	// ---------------------------------------------------------------------------------------------------------------
 	// Arithmetic and simple relations
 	// ---------------------------------------------------------------------------------------------------------------
@@ -139,7 +174,8 @@ public class Constraints {
 	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op, final int value)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p, p.getModel().arithm(var.asIntVar(scope), op, value));
+		return new GamaConstraint(p, p.getModel().arithm(var.asIntVar(scope), op, value),
+				new Relation(relationOf(scope, op), new Term.Var(var), new Term.Const(value)));
 	}
 
 	/**
@@ -159,7 +195,8 @@ public class Constraints {
 	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op,
 			final GamaVariable other) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p, p.getModel().arithm(var.asIntVar(scope), op, other.asIntVar(scope)));
+		return new GamaConstraint(p, p.getModel().arithm(var.asIntVar(scope), op, other.asIntVar(scope)),
+				new Relation(relationOf(scope, op), new Term.Var(var), new Term.Var(other)));
 	}
 
 	/**
@@ -179,8 +216,18 @@ public class Constraints {
 	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op1,
 			final GamaVariable other, final String op2, final int value) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p,
-				p.getModel().arithm(var.asIntVar(scope), op1, other.asIntVar(scope), op2, value));
+		final Term.Bin arithmetic = switch (op1) {
+			case "+" -> Term.Bin.ADD;
+			case "-" -> Term.Bin.SUB;
+			case "*" -> Term.Bin.MUL;
+			case "/" -> Term.Bin.DIV;
+			default -> throw GamaRuntimeException
+					.error("Unknown arithmetic operator '" + op1 + "'. Expected one of: + - * /", scope);
+		};
+		return new GamaConstraint(p, p.getModel().arithm(var.asIntVar(scope), op1, other.asIntVar(scope), op2, value),
+				new Relation(relationOf(scope, op2),
+						new Term.Binary(arithmetic, new Term.Var(var), new Term.Var(other)),
+						new Term.Const(value)));
 	}
 
 	/**
@@ -203,7 +250,8 @@ public class Constraints {
 		final int[] c = CPUtils.ints(scope, coeffs);
 		if (c.length != vars.size()) throw GamaRuntimeException
 				.error("scalar expects as many coefficients (" + c.length + ") as variables (" + vars.size() + ")", scope);
-		return of(scope, vars, p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value));
+		return new GamaConstraint(p, p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value),
+				new Relation(relationOf(scope, op), weightedSum(vars, c), new Term.Const(value)));
 	}
 
 	/**
@@ -223,7 +271,8 @@ public class Constraints {
 		final int[] c = CPUtils.ints(scope, coeffs);
 		if (c.length != vars.size()) throw GamaRuntimeException
 				.error("scalar expects as many coefficients (" + c.length + ") as variables (" + vars.size() + ")", scope);
-		return of(scope, vars, p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value.asIntVar(scope)));
+		return new GamaConstraint(p, p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value.asIntVar(scope)),
+				new Relation(relationOf(scope, op), weightedSum(vars, c), new Term.Var(value)));
 	}
 
 	/**

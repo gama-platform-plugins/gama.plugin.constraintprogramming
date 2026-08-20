@@ -37,8 +37,8 @@ public class GamaConstraint implements IValue {
 	/** The problem this constraint refers to. */
 	private final GamaProblem problem;
 
-	/** The underlying Choco constraint. */
-	private final Constraint constraint;
+	/** The underlying Choco constraint, built on demand when the constraint comes from a relation. */
+	private Constraint constraint;
 
 	/** Whether the constraint has been posted. */
 	private boolean posted;
@@ -76,6 +76,21 @@ public class GamaConstraint implements IValue {
 	}
 
 	/**
+	 * Instantiates a constraint from a relation, without compiling it. The relation stays in its neutral form until an
+	 * engine asks for it, which is what lets a linear engine read it directly instead of going through Choco.
+	 *
+	 * @param problem
+	 *            the problem
+	 * @param relation
+	 *            the relation
+	 */
+	public GamaConstraint(final GamaProblem problem, final Relation relation) {
+		this.problem = problem;
+		this.constraint = null;
+		this.relation = relation;
+	}
+
+	/**
 	 * Gets the relation this constraint was built from.
 	 *
 	 * @return the relation, or null if the constraint does not come from an arithmetic expression
@@ -97,6 +112,22 @@ public class GamaConstraint implements IValue {
 	public Constraint getConstraint() { return constraint; }
 
 	/**
+	 * Returns the Choco constraint, compiling the relation the first time it is asked for.
+	 *
+	 * @param scope
+	 *            the current scope, used to report the error
+	 * @return the Choco constraint
+	 */
+	public Constraint getChocoConstraint(final IScope scope) throws GamaRuntimeException {
+		if (constraint == null) {
+			if (relation == null)
+				throw GamaRuntimeException.error("This constraint has neither a compiled form nor a relation", scope);
+			constraint = ChocoCompiler.compile(scope, problem, relation).decompose();
+		}
+		return constraint;
+	}
+
+	/**
 	 * Posts the constraint to its problem. Posting twice is a no-op rather than an error, so that a constraint held in a
 	 * GAML variable and posted in a loop does not silently duplicate propagators.
 	 *
@@ -107,17 +138,33 @@ public class GamaConstraint implements IValue {
 	 */
 	public void post(final IScope scope) throws GamaRuntimeException {
 		if (posted) return;
-		try {
-			constraint.post();
+		if (problem.isLinear()) {
+			// A linear engine reads the relations at solve time; there is nothing to hand to Choco, and compiling the
+			// relation for it would build propagators no one would ever run.
+			if (relation == null) throw GamaRuntimeException.error("The constraint " + getConstraintName()
+					+ " is a global constraint, which the '" + problem.getBackend().getLabel()
+					+ "' engine does not handle. Use the 'choco' engine, or express it with linear constraints.", scope);
 			posted = true;
+			problem.recordPosted(this);
+			return;
+		}
+		try {
+			getChocoConstraint(scope).post();
+			posted = true;
+			problem.recordPosted(this);
+		} catch (final GamaRuntimeException e) {
+			throw e;
 		} catch (final Exception e) {
-			throw GamaRuntimeException.error("Impossible to post the constraint " + constraint.getName() + ": "
-					+ e.getMessage(), scope);
+			throw GamaRuntimeException
+					.error("Impossible to post the constraint " + getConstraintName() + ": " + e.getMessage(), scope);
 		}
 	}
 
 	@getter ("name")
-	public String getConstraintName() { return constraint.getName(); }
+	public String getConstraintName() {
+		if (constraint != null) return constraint.getName();
+		return relation == null ? "constraint" : relation.describe();
+	}
 
 	@getter ("posted")
 	public boolean isPosted() { return posted; }
@@ -127,12 +174,13 @@ public class GamaConstraint implements IValue {
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
-		return constraint.toString();
+		if (constraint != null) return constraint.toString();
+		return relation.describe();
 	}
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return constraint.getName();
+		return getConstraintName();
 	}
 
 	@Override
@@ -142,7 +190,7 @@ public class GamaConstraint implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType()).add("name", constraint.getName()).add("posted", posted);
+		return json.typedObject(getGamlType()).add("name", getConstraintName()).add("posted", posted);
 	}
 
 }
