@@ -472,7 +472,7 @@ public class Expressions {
 
 	/** Compiles a constraint into a table. */
 	@operator (value = "as_table", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
-	@doc (value = "Recompiles a constraint built from an expression into a single table constraint, listing the combinations of values that satisfy it, and returns it.",
+	@doc (value = "Recompiles a constraint built from an expression into a single table constraint, listing the combinations of values that satisfy it, and returns it. Only available with the 'choco' engine.",
 			comment = "A table propagates far more strongly than the chain of propagators the expression is decomposed into, because it reasons over the whole relation at once. It is only applicable when the variables of the expression have small domains, since the number of combinations grows as their product. Only works on a constraint that came from an expression, not on a global constraint.",
 			examples = { @example (value = "do post(as_table(x * y + z = 12));", isExecutable = false) },
 			see = { "=" })
@@ -480,6 +480,7 @@ public class Expressions {
 	public static GamaConstraint asTable(final IScope scope, final GamaConstraint constraint)
 			throws GamaRuntimeException {
 		if (constraint == null) throw GamaRuntimeException.error("Trying to tabulate a nil constraint", scope);
+		CPUtils.requireConstraintEngine(scope, constraint.getProblem(), "as_table", null);
 		final Relation source = constraint.getRelation();
 		if (source == null) throw GamaRuntimeException.error("as_table only applies to a constraint built from an "
 				+ "arithmetic expression, and " + constraint.getConstraintName() + " is not one", scope);

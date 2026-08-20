@@ -187,7 +187,7 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Declares a set variable in a problem and returns it. The third operand lists the values that the set necessarily contains, the fourth the values it may contain.",
+			value = "Declares a set variable in a problem and returns it. The third operand lists the values that the set necessarily contains, the fourth the values it may contain. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "pb_variable s <- set_var(p, \"s\", [], [1, 2, 3, 4]);",
 					isExecutable = false) },
@@ -196,6 +196,7 @@ public class Variables {
 	public static GamaVariable setVar(final IScope scope, final GamaProblem problem, final String name,
 			final IList<Integer> mandatory, final IList<Integer> possible) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Cannot declare the variable " + name + " in a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "set_var", "A linear engine has no notion of a set variable.");
 		return problem
 				.register(problem.getModel().setVar(name, CPUtils.ints(scope, mandatory), CPUtils.ints(scope, possible)));
 	}
@@ -213,7 +214,7 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the sum of the variables given as operand.",
+			value = "Returns a new variable constrained to be equal to the sum of the variables given as operand. Only available with the 'choco' engine.",
 			comment = "Named sum_var rather than sum to avoid any ambiguity with the sum operator of the core library.",
 			examples = { @example (
 					value = "pb_variable total <- sum_var(loads);",
@@ -222,6 +223,7 @@ public class Variables {
 	@no_test
 	public static GamaVariable sumVar(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
+		CPUtils.requireConstraintEngine(scope, p, "sum_var", "Write the sum as an expression instead, as in a + b + c.");
 		return p.register(p.getModel().sum(p.newName("sum"), CPUtils.intVars(scope, vars)));
 	}
 
@@ -233,11 +235,12 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the smallest value taken by the variables given as operand.",
+			value = "Returns a new variable constrained to be equal to the smallest value taken by the variables given as operand. Only available with the 'choco' engine.",
 			see = { "max_var", "sum_var", "arg_min_var" })
 	@no_test
 	public static GamaVariable minVar(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
+		CPUtils.requireConstraintEngine(scope, p, "min_var", null);
 		return p.register(p.getModel().min(p.newName("min"), CPUtils.intVars(scope, vars)));
 	}
 
@@ -249,11 +252,12 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the largest value taken by the variables given as operand.",
+			value = "Returns a new variable constrained to be equal to the largest value taken by the variables given as operand. Only available with the 'choco' engine.",
 			see = { "min_var", "sum_var", "arg_max_var" })
 	@no_test
 	public static GamaVariable maxVar(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
+		CPUtils.requireConstraintEngine(scope, p, "max_var", null);
 		return p.register(p.getModel().max(p.newName("max"), CPUtils.intVars(scope, vars)));
 	}
 
@@ -265,7 +269,7 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the number of variables of the first operand taking the value given as second operand.",
+			value = "Returns a new variable constrained to be equal to the number of variables of the first operand taking the value given as second operand. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "pb_variable nb_idle <- count_var(slots, 0);",
 					isExecutable = false) },
@@ -274,6 +278,7 @@ public class Variables {
 	public static GamaVariable countVar(final IScope scope, final IList<GamaVariable> vars, final int value)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
+		CPUtils.requireConstraintEngine(scope, p, "count_var", null);
 		return p.register(p.getModel().count(p.newName("count"), value, CPUtils.intVars(scope, vars)));
 	}
 
@@ -285,11 +290,12 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the index, starting at 0, of the smallest variable of the operand.",
+			value = "Returns a new variable constrained to be equal to the index, starting at 0, of the smallest variable of the operand. Only available with the 'choco' engine.",
 			see = { "arg_max_var", "min_var" })
 	@no_test
 	public static GamaVariable argMinVar(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
+		CPUtils.requireConstraintEngine(scope, p, "arg_min_var", null);
 		return p.register(p.getModel().argmin(p.newName("argmin"), CPUtils.intVars(scope, vars)));
 	}
 
@@ -301,11 +307,12 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the index, starting at 0, of the largest variable of the operand.",
+			value = "Returns a new variable constrained to be equal to the index, starting at 0, of the largest variable of the operand. Only available with the 'choco' engine.",
 			see = { "arg_min_var", "max_var" })
 	@no_test
 	public static GamaVariable argMaxVar(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
+		CPUtils.requireConstraintEngine(scope, p, "arg_max_var", null);
 		return p.register(p.getModel().argmax(p.newName("argmax"), CPUtils.intVars(scope, vars)));
 	}
 
@@ -317,7 +324,7 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the value read in the table given as first operand, at the index given by the variable of the second operand. Indices start at 0.",
+			value = "Returns a new variable constrained to be equal to the value read in the table given as first operand, at the index given by the variable of the second operand. Indices start at 0. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "pb_variable cost <- element_var([10, 4, 7], choice);",
 					isExecutable = false) },
@@ -326,6 +333,7 @@ public class Variables {
 	public static GamaVariable elementVar(final IScope scope, final IList<Integer> table, final GamaVariable index)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, index);
+		CPUtils.requireConstraintEngine(scope, p, "element_var", null);
 		return p.register(
 				p.getModel().element(p.newName("element"), CPUtils.ints(scope, table), index.asIntVar(scope), 0));
 	}
@@ -338,7 +346,7 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the value read in the matrix given as first operand, on the row given as second, at the column given by the variable of the third. Indices start at 0.",
+			value = "Returns a new variable constrained to be equal to the value read in the matrix given as first operand, on the row given as second, at the column given by the variable of the third. Indices start at 0. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "pb_variable leg <- element_var(distances, i, next[i]);",
 					isExecutable = false) },
@@ -347,6 +355,7 @@ public class Variables {
 	public static GamaVariable elementVar(final IScope scope, final IMatrix table, final int row,
 			final GamaVariable index) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, index);
+		CPUtils.requireConstraintEngine(scope, p, "element_var", null);
 		if (table == null) throw GamaRuntimeException.error("A nil matrix was given to element_var", scope);
 		final int cols = table.getCols(scope);
 		final int[] line = new int[cols];
@@ -367,12 +376,13 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the remainder of the euclidean division of the first operand by the second.",
+			value = "Returns a new variable constrained to be equal to the remainder of the euclidean division of the first operand by the second. Only available with the 'choco' engine.",
 			see = { "abs_var" })
 	@no_test
 	public static GamaVariable modVar(final IScope scope, final GamaVariable var, final int divisor)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
+		CPUtils.requireConstraintEngine(scope, p, "mod_var", "Write it as an expression instead, as in x mod k.");
 		if (divisor == 0) throw GamaRuntimeException.error("Division by zero in mod_var", scope);
 		return p.register(p.getModel().mod(p.newName("mod"), var.asIntVar(scope), divisor));
 	}
@@ -385,11 +395,12 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the absolute value of the operand. Implemented as a view: it costs neither a propagator nor a search decision.",
+			value = "Returns a new variable constrained to be equal to the absolute value of the operand. Implemented as a view: it costs neither a propagator nor a search decision. Only available with the 'choco' engine.",
 			see = { "neg_var", "offset_var", "scale_var" })
 	@no_test
 	public static GamaVariable absVar(final IScope scope, final GamaVariable var) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
+		CPUtils.requireConstraintEngine(scope, p, "abs_var", null);
 		return p.register(p.getModel().abs(var.asIntVar(scope)));
 	}
 
@@ -401,11 +412,12 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the opposite of the operand. Implemented as a view.",
+			value = "Returns a new variable constrained to be equal to the opposite of the operand. Implemented as a view. Only available with the 'choco' engine.",
 			see = { "abs_var", "offset_var", "scale_var" })
 	@no_test
 	public static GamaVariable negVar(final IScope scope, final GamaVariable var) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
+		CPUtils.requireConstraintEngine(scope, p, "neg_var", "Write it as an expression instead, as in -x.");
 		return p.register(p.getModel().neg(var.asIntVar(scope)));
 	}
 
@@ -417,12 +429,13 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the first operand plus the constant given as second operand. Implemented as a view.",
+			value = "Returns a new variable constrained to be equal to the first operand plus the constant given as second operand. Implemented as a view. Only available with the 'choco' engine.",
 			see = { "scale_var", "neg_var" })
 	@no_test
 	public static GamaVariable offsetVar(final IScope scope, final GamaVariable var, final int offset)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
+		CPUtils.requireConstraintEngine(scope, p, "offset_var", "Write it as an expression instead, as in x + k.");
 		return p.register(p.getModel().offset(var.asIntVar(scope), offset));
 	}
 
@@ -434,12 +447,13 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the first operand multiplied by the constant given as second operand. Implemented as a view.",
+			value = "Returns a new variable constrained to be equal to the first operand multiplied by the constant given as second operand. Implemented as a view. Only available with the 'choco' engine.",
 			see = { "offset_var", "neg_var" })
 	@no_test
 	public static GamaVariable scaleVar(final IScope scope, final GamaVariable var, final int factor)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
+		CPUtils.requireConstraintEngine(scope, p, "scale_var", "Write it as an expression instead, as in k * x.");
 		return p.register(p.getModel().mul(var.asIntVar(scope), factor));
 	}
 

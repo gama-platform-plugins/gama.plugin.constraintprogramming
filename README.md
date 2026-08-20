@@ -1,10 +1,53 @@
 # Constraint Programming for GAMA
 
-A GAMA plugin exposing [Choco-solver](https://choco-solver.org) 6 to GAML: declare decision variables, post constraints over them, and let a constraint solver find assignments that satisfy them, or the best such assignment according to an objective.
+A GAMA plugin exposing [Choco-solver](https://choco-solver.org) 6 and [HiGHS](https://highs.dev) to GAML: declare decision variables, post constraints over them, and let a solver find an assignment that satisfies them, or the best one according to an objective.
 
-The GAML API mirrors the shape of the Choco Java API, so anything written for Choco translates line by line, and the Choco documentation applies directly.
+The GAML API mirrors the shape of the Choco Java API, so anything written for Choco translates line by line, and the Choco documentation applies directly. The same model can be given to a linear or mixed integer solver instead, by naming the engine when the problem is created.
 
 This version is developed for GAMA 2026-06 and above.
+
+## What the engines are, and when to use which
+
+The same model can be handed to several solvers. The engine is chosen when the problem is created and nothing else in the model changes: the same declarations, the same expressions, the same way of reading a solution.
+
+```gaml
+problem p <- problem("my_problem", "highs");
+```
+
+Two families of engine sit behind that word. What each is good at follows from how it searches, so the two sections below start there.
+
+### Constraint programming: `choco`, `choco_lcg`
+
+A constraint engine reasons by **propagation**. Each constraint repeatedly removes values that cannot appear in any solution, the removals cascade to the neighbouring constraints, and the solver branches only on what propagation could not settle.
+
+Its strength is combinatorial structure. A single `all_different` over twenty variables reasons about the whole set at once, and so do `circuit`, `element`, `table`, `global_cardinality`. It also handles integer arithmetic that is not linear, so a product of two decisions or a square is expressed directly. It is the only family here that can enumerate solutions rather than return one, and the only one that can reify a constraint into a boolean variable, which is how a preference becomes a term of the objective rather than a rule that can make the model infeasible.
+
+Its weakness is dense linear arithmetic. Over a weighted sum, propagation only tightens bounds, which prunes very little, and the search thrashes. [Choco-solver](https://choco-solver.org) 6 is the engine, and `choco_lcg` is the same solver with lazy clause generation, where each conflict leaves behind a clause the search will not walk into again.
+
+### Linear and mixed integer programming: `highs`, `lp`
+
+A linear engine does the opposite. It drops the integrality requirement, solves the continuous relaxation with a simplex, and rebuilds integrality by branching and cutting, guided by the bound the relaxation gives it. That bound is exactly what a constraint engine lacks on this kind of model, which is why the two families are complementary rather than competing.
+
+Its strength is any model made of weighted sums and bounds: allocation, blending, transport, production planning, network flow. Its limit is everything else. No global constraints, no product of two unknowns, no disequality, no set variables. Those are refused when written, with the operator or the sub-expression named, rather than mis-solved.
+
+[HiGHS](https://highs.dev) is the engine to use, shipped with the plugin as a native binary. The `lp` engine is the small solver bundled inside Choco, kept because it needs nothing to run, but it works on a dense tableau, cannot be interrupted, and writes to the standard output. Prefer `highs`.
+
+### Choosing
+
+Look at the constraints, not at the size.
+
+| The model is made of | Use |
+|---|---|
+| weighted sums, bounds, an objective | `highs` |
+| `all_different`, sequencing, routing, "at most k of these" | `choco` |
+| products, quotients or powers of two decisions | `choco` |
+| preferences to be counted rather than imposed | `choco`, through `reify` |
+| every solution wanted, not just one | `choco` |
+| both kinds at once | start with `choco`, and see |
+
+On `80bau3b`, a Netlib test problem of 9799 columns and 2262 rows, `highs` reads and solves it in about a second and returns the published optimum, while `lp` does not finish. On a model built around `all_different` or `circuit`, no linear engine can state the problem at all.
+
+`Engine Benchmark.gaml` runs the same growing family of problems through every engine and charts both the time spent and the value found. Time alone is misleading, since an engine that returns quickly because it stopped early is only distinguishable in the second chart.
 
 ## The four steps
 
@@ -107,30 +150,42 @@ Casting a string to `problem` creates a new, empty one.
 problem p <- problem("my_problem");
 ```
 
-`problem(string name, string engine)` creates one solved by a named engine. The rest of a model is unchanged whatever the engine: the same declarations, the same expressions and the same way of reading a solution.
+`problem(string name, string engine)` creates one solved by a named engine, among `choco`, `choco_lcg`, `lp` and `highs`. Which to pick is discussed in the [introduction](#what-the-engines-are-and-when-to-use-which); what each accepts is listed below.
 
-| Engine | |
-|---|---|
-| `choco` | the constraint engine, the default, handles everything the plugin exposes |
-| `choco_lcg` | the same with lazy clause generation, see [Tuning the search](#tuning-the-search) |
-| `lp` | the linear engine bundled with Choco, only accepts linear constraints |
-| `highs` | HiGHS, a linear and mixed integer solver shipped with the plugin as a native binary |
+## Engines
 
-An engine that cannot represent a constraint says so when it is posted, naming the constraint and, for an arithmetic expression, the sub-expression responsible. The `lp` engine refuses global constraints, `!=`, and any product, quotient, remainder or power of two variables; it accepts int and bool variables only.
+Everything in this reference works on every engine unless its documentation says otherwise. The operators that only the constraint engine can honour carry the sentence *Only available with the 'choco' engine*, and refuse the others at the point of use.
 
-Both linear engines handle int, bool and continuous variables. The `lp` engine works in standard form, where every variable is shifted to be non-negative, so a variable with no lower bound is refused; `highs` takes the bounds as they are, infinite ones included.
+| | `choco`, `choco_lcg` | `lp`, `highs` |
+|---|---|---|
+| int, bool and continuous variables | yes | yes |
+| set variables | yes | no |
+| arithmetic and relational expressions | yes | linear ones only |
+| `arithm`, `scalar` | yes | yes |
+| global constraints (`all_different`, `circuit`, `table`, `knapsack`, …) | yes | no |
+| `member`, `not_member` | yes | no |
+| derived variables (`sum_var`, `min_var`, `element_var`, `abs_var`, …) | yes | no |
+| combinators and `reify` | yes | no |
+| `!=` in a posted constraint | yes | no |
+| `search`, `minimize`, `maximize`, `optimize` | yes | yes |
+| `all_solutions` | yes | no |
+| hints, `reset`, search strategies | yes | no |
+| `read_mps` | yes, if the file is integral | yes |
+| `nodes`, `fails`, `solutions`, `search_time` | reported | left at zero |
 
-### HiGHS
+The derived variables are the one place where the distinction is not obvious. `sum_var(vars)` creates a variable and ties it to its operands through a constraint posted in Choco, which a linear engine never sees, so the variable would be left free and the answer quietly wrong. They are refused rather than accepted and mis-solved; write the sum as an expression instead, as in `a + b + c`.
 
-`highs` is the engine to use on a linear model of any size. It is a native solver, shipped with the plugin under `native/<os>/<arch>/` and loaded from a copy made in a temporary directory, so nothing has to be added to the `PATH` of the machine nor to `java.library.path`.
+A time budget is honoured by `choco`, `choco_lcg` and `highs`. The `lp` engine cannot stop itself: its branch and bound runs to the end whatever budget it is given, and it writes the relaxation of each node to the standard output with no way to silence it. It is bundled inside Choco as an internal helper rather than as a solver meant to be exposed, and is kept here because it needs nothing to run.
 
-Loading is attempted once, on the first problem created with this engine. When it fails, for want of a binary for the platform or of a dependency of that binary, the engine reports why instead of letting a link error surface in the middle of a simulation, and the model can fall back to another engine.
+Both linear engines take int, bool and continuous variables. The `lp` engine works in standard form, where every variable is shifted to be non-negative, so a variable with no lower bound is refused; `highs` takes the bounds as they are, infinite ones included.
 
-Measured on `80bau3b`, one of the Netlib test problems, at 9799 columns and 2262 rows: read in 493 ms, solved in 655 ms, giving 987224.1924, the published optimum. The `lp` engine does not finish on a model of that size.
+### Shipping HiGHS
+
+HiGHS is a native solver. Its binaries live in the plugin under `native/<os>/<arch>/`, are copied to a temporary directory on first use and loaded from there by absolute path, so nothing has to be added to the `PATH` of the machine nor to `java.library.path`, which the platform reads once at startup and never again.
+
+Loading is attempted once. When it fails, the engine reports why, distinguishing a missing binary from one that cannot be loaded, instead of letting a link error surface in the middle of a simulation. A model can then fall back to another engine.
 
 Binaries are currently shipped for Windows on x86_64 only. Adding a platform means dropping the shared library under `native/<os>/<arch>/` and declaring it in `Bundle-NativeCode`; nothing in the code changes.
-
-> **Note:** the `lp` engine is currently backed by the linear solver bundled with Choco, which is an internal helper rather than a production solver: it uses a dense tableau, and its branch and bound writes the relaxation of each node to the standard output with no way to silence it. It is here to keep the multi-engine seam honest, not to run large models.
 
 ## Declaring variables
 
@@ -192,7 +247,7 @@ An arithmetic operator builds a tree and adds nothing to the problem. The tree i
 
 `as_table` recompiles a constraint built from an expression into a single table listing the combinations that satisfy it. A table propagates far more strongly than the decomposition, since it reasons over the whole relation at once, but the number of combinations grows as the product of the domain sizes.
 
-Products, quotients, powers and remainders of two variables are non-linear constraints, propagated on the bounds only.
+Products, quotients, powers and remainders of two variables are non-linear constraints. The constraint engine propagates them natively, on the bounds: Ibex, the library Choco delegates to and which this plugin does not ship, is only needed for continuous non-linear relations, not for these. A linear engine refuses them, naming the sub-expression it cannot represent.
 
 ## Constraints
 
@@ -464,3 +519,5 @@ In `models/Constraint Programming/`:
 | `Livestock Feeding.gaml` | a full linear model translated from Choco Java |
 | `Production Planning.gaml` | a linear model, run on either engine by changing one word |
 | `MPS File.gaml` | a problem read from a file rather than declared |
+| `Engine Benchmark.gaml` | the same problems solved by every engine, charted as they grow |
+| `Non Linear.gaml` | a product of two decisions, and squares, on the constraint engine |

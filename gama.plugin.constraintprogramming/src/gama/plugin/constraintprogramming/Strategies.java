@@ -94,7 +94,7 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Chooses how the solver branches, over every integer variable of the problem, and returns the problem. Accepted names: 'default', 'input_order_lb', 'input_order_ub', 'min_dom_lb', 'min_dom_ub', 'random', 'dom_over_w_deg', 'dom_over_w_deg_ref', 'activity_based', 'conflict_history', 'failure_rate', 'failure_length', 'pick_on_dom', 'round_robin', 'adaptive_round_robin'.",
+			value = "Chooses how the solver branches, over every integer variable of the problem, and returns the problem. Accepted names: 'default', 'input_order_lb', 'input_order_ub', 'min_dom_lb', 'min_dom_ub', 'random', 'dom_over_w_deg', 'dom_over_w_deg_ref', 'activity_based', 'conflict_history', 'failure_rate', 'failure_length', 'pick_on_dom', 'round_robin', 'adaptive_round_robin'. Only available with the 'choco' engine.",
 			comment = "A strategy never changes which solutions exist, only the order and the speed at which they are found. The adaptive ones ('dom_over_w_deg_ref', 'conflict_history', 'activity_based') learn from failures during the search and are the usual first thing to try on a problem that does not converge.",
 			examples = { @example (
 					value = "do use_strategy(p, \"dom_over_w_deg_ref\");",
@@ -104,6 +104,7 @@ public class Strategies {
 	public static GamaProblem useStrategy(final IScope scope, final GamaProblem problem, final String name)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "use_strategy", null);
 		final IntVar[] all = problem.getModel().retrieveIntVars(true);
 		final AbstractStrategy strategy = strategyNamed(scope, name, all);
 		if (strategy == null) {
@@ -122,7 +123,7 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Chooses how the solver branches, over the variables given as third operand only, and returns the problem. The remaining variables are handled by a default strategy appended behind, so the search stays complete.",
+			value = "Chooses how the solver branches, over the variables given as third operand only, and returns the problem. The remaining variables are handled by a default strategy appended behind, so the search stays complete. Only available with the 'choco' engine.",
 			comment = "Restricting the branching to the real decisions is often the single most profitable setting. By default the solver also branches on the variables produced by sum_var, min_var and the like, and on the objective, although those are determined by the others and branching on them mostly wastes decisions.",
 			examples = { @example (
 					value = "do use_strategy(p, \"dom_over_w_deg_ref\", decisions);",
@@ -132,6 +133,7 @@ public class Strategies {
 	public static GamaProblem useStrategy(final IScope scope, final GamaProblem problem, final String name,
 			final IList<GamaVariable> vars) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "use_strategy", null);
 		if (vars == null || vars.isEmpty()) return useStrategy(scope, problem, name);
 		final AbstractStrategy strategy = strategyNamed(scope, name, CPUtils.intVars(scope, vars));
 		if (strategy == null) {
@@ -170,7 +172,7 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Adds last conflict reasoning on top of the strategy currently in use, and returns the problem. After a failure, the solver retries the variable involved in it before following its usual order.",
+			value = "Adds last conflict reasoning on top of the strategy currently in use, and returns the problem. After a failure, the solver retries the variable involved in it before following its usual order. Only available with the 'choco' engine.",
 			comment = "Very cheap and rarely harmful: it is the first thing to add to any strategy.",
 			examples = { @example (
 					value = "do with_last_conflict(p);",
@@ -180,6 +182,7 @@ public class Strategies {
 	public static GamaProblem withLastConflict(final IScope scope, final GamaProblem problem)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "with_last_conflict", null);
 		problem.getSolver().setSearch(Search.lastConflict(currentStrategy(problem)));
 		return problem;
 	}
@@ -192,12 +195,13 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Adds conflict ordering on top of the strategy currently in use, and returns the problem. A generalisation of last conflict, which keeps the whole sequence of variables involved in recent failures.",
+			value = "Adds conflict ordering on top of the strategy currently in use, and returns the problem. A generalisation of last conflict, which keeps the whole sequence of variables involved in recent failures. Only available with the 'choco' engine.",
 			see = { "with_last_conflict" })
 	@no_test
 	public static GamaProblem withConflictOrdering(final IScope scope, final GamaProblem problem)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "with_conflict_ordering", null);
 		problem.getSolver().setSearch(Search.conflictOrderingSearch(currentStrategy(problem)));
 		return problem;
 	}
@@ -210,12 +214,13 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Makes the strategy try, for each variable, the bound that looks the most promising for the objective, and returns the problem. Only meaningful on an optimisation problem, and only if the strategy branches on integer variables.",
+			value = "Makes the strategy try, for each variable, the bound that looks the most promising for the objective, and returns the problem. Only meaningful on an optimisation problem, and only if the strategy branches on integer variables. Only available with the 'choco' engine.",
 			see = { "use_strategy", "minimize" })
 	@no_test
 	public static GamaProblem withBestBound(final IScope scope, final GamaProblem problem)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "with_best_bound", null);
 		try {
 			problem.getSolver().setSearch(Search.bestBound(currentStrategy(problem)));
 		} catch (final ClassCastException e) {
@@ -233,7 +238,7 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Makes the solver restart its search periodically, and returns the problem. Accepted policies: 'luby', 'geometric', 'linear', 'constant' and 'on_solution'. The third operand is the number of failures before the first restart; the policy decides how that number grows afterwards.",
+			value = "Makes the solver restart its search periodically, and returns the problem. Accepted policies: 'luby', 'geometric', 'linear', 'constant' and 'on_solution'. The third operand is the number of failures before the first restart; the policy decides how that number grows afterwards. Only available with the 'choco' engine.",
 			comment = "Restarting escapes a bad early decision that the search would otherwise pay for during a very long time. It only pays off with a strategy that learns, such as 'dom_over_w_deg_ref' or 'conflict_history', and with record_nogoods, which is what keeps the effort of a run from being lost at the next one. 'on_solution' restarts after each solution instead, which is useful for optimisation.",
 			examples = { @example (
 					value = "do use_restarts(p, \"luby\", 500);",
@@ -243,6 +248,7 @@ public class Strategies {
 	public static GamaProblem useRestarts(final IScope scope, final GamaProblem problem, final String policy,
 			final int cutoff) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "use_restarts", null);
 		if (cutoff <= 0 && !"on_solution".equals(policy))
 			throw GamaRuntimeException.error("The cutoff of a restart policy must be strictly positive", scope);
 		final Solver solver = problem.getSolver();
@@ -267,7 +273,7 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Makes the solver remember, at each restart, the assignments it has already proven impossible, and returns the problem. Without it a restart throws away everything the previous run had established.",
+			value = "Makes the solver remember, at each restart, the assignments it has already proven impossible, and returns the problem. Without it a restart throws away everything the previous run had established. Only available with the 'choco' engine.",
 			comment = "Only useful together with use_restarts.",
 			examples = { @example (
 					value = "do record_nogoods(p);",
@@ -277,6 +283,7 @@ public class Strategies {
 	public static GamaProblem recordNogoods(final IScope scope, final GamaProblem problem)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "record_nogoods", null);
 		problem.getSolver().setNoGoodRecordingFromRestarts();
 		return problem;
 	}

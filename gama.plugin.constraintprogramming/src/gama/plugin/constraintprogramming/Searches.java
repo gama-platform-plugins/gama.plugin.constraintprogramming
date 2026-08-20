@@ -194,7 +194,7 @@ public class Searches {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Runs the solver on a problem and returns every solution it finds. Beware that the number of solutions of a constraint problem is very often enormous: use the two-operand form unless the problem is known to be small.",
+			value = "Runs the solver on a problem and returns every solution it finds. Beware that the number of solutions of a constraint problem is very often enormous: use the two-operand form unless the problem is known to be small. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "list<solution> all <- all_solutions(p);",
 					isExecutable = false) },
@@ -214,7 +214,7 @@ public class Searches {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Runs the solver on a problem and returns at most as many solutions as the second operand indicates.",
+			value = "Runs the solver on a problem and returns at most as many solutions as the second operand indicates. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "list<solution> five <- all_solutions(p, 5);",
 					isExecutable = false) },
@@ -237,7 +237,7 @@ public class Searches {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Tells the solver to try, for each variable of the problem, the value it took in the solution given as second operand, and returns the number of hints that could be applied.",
+			value = "Tells the solver to try, for each variable of the problem, the value it took in the solution given as second operand, and returns the number of hints that could be applied. Only available with the 'choco' engine.",
 			comment = "Variables are matched by name, so the solution may come from another problem, typically the one built at the previous simulation step. A hint only guides the search: it can never make a result wrong, only faster or slower. Variables of the solution that have no counterpart by name in the problem are skipped, which is what the returned count lets you check.",
 			examples = { @example (
 					value = "int applied <- hint_from(p, previous_solution);",
@@ -247,7 +247,7 @@ public class Searches {
 	public static int hintFrom(final IScope scope, final GamaProblem problem, final GamaSolution solution)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to hint a nil problem", scope);
-		if (problem.isLinear()) return 0;
+		CPUtils.requireConstraintEngine(scope, problem, "hint_from", null);
 		if (solution == null || !solution.exists()) return 0;
 		int applied = 0;
 		final Solver solver = problem.getSolver();
@@ -270,7 +270,7 @@ public class Searches {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Tells the solver to try this value first for this variable, and returns the variable. Only guides the search, never restricts the solutions.",
+			value = "Tells the solver to try this value first for this variable, and returns the variable. Only guides the search, never restricts the solutions. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "do add_hint(slot_of_worker_3, 5);",
 					isExecutable = false) },
@@ -279,6 +279,7 @@ public class Searches {
 	public static GamaVariable addHint(final IScope scope, final GamaVariable variable, final int value)
 			throws GamaRuntimeException {
 		if (variable == null) throw GamaRuntimeException.error("Trying to hint a nil variable", scope);
+		CPUtils.requireConstraintEngine(scope, variable.getProblem(), "add_hint", null);
 		variable.getProblem().getSolver().addHint(variable.asIntVar(scope), value);
 		return variable;
 	}
@@ -291,11 +292,12 @@ public class Searches {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Removes every hint given to the solver of this problem, and returns the problem.",
+			value = "Removes every hint given to the solver of this problem, and returns the problem. Only available with the 'choco' engine.",
 			see = { "hint_from", "add_hint" })
 	@no_test
 	public static GamaProblem clearHints(final IScope scope, final GamaProblem problem) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to clear the hints of a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "clear_hints", null);
 		problem.getSolver().removeHints();
 		return problem;
 	}
@@ -308,7 +310,7 @@ public class Searches {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Brings the solver of this problem back to its initial state and returns the problem. Without it, searching the same problem twice resumes the previous search instead of starting a new one.",
+			value = "Brings the solver of this problem back to its initial state and returns the problem. Without it, searching the same problem twice resumes the previous search instead of starting a new one. Only available with the 'choco' engine.",
 			comment = "Variables, constraints and hints are kept; only the state of the search is undone.",
 			examples = { @example (
 					value = "do reset(p);",
@@ -317,6 +319,7 @@ public class Searches {
 	@no_test
 	public static GamaProblem reset(final IScope scope, final GamaProblem problem) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to reset a nil problem", scope);
+		CPUtils.requireConstraintEngine(scope, problem, "reset", "A linear engine keeps no search state to reset.");
 		problem.getSolver().reset();
 		return problem;
 	}

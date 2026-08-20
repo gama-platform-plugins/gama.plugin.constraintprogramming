@@ -21,6 +21,32 @@ public class CPUtils {
 	public static final String CATEGORY = "Constraint programming";
 
 	/**
+	 * Refuses an operator that only the constraint engine can honour.
+	 *
+	 * <p>
+	 * The derived variables and the reification link a new variable to its operands through a constraint posted in
+	 * Choco. A linear engine reads the relations recorded by the plugin and never sees that link, so the variable
+	 * would be left free and the answer would be quietly wrong. Refusing is the only safe behaviour.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param problem
+	 *            the problem the operator is applied to
+	 * @param operator
+	 *            the name of the operator, for the message
+	 * @param alternative
+	 *            what to write instead, or null when there is no direct equivalent
+	 */
+	public static void requireConstraintEngine(final IScope scope, final GamaProblem problem, final String operator,
+			final String alternative) throws GamaRuntimeException {
+		if (problem == null || !problem.isLinear()) return;
+		throw GamaRuntimeException.error(operator + " is only available with the 'choco' engine, and this problem uses '"
+				+ problem.getBackend().getLabel() + "'."
+				+ (alternative == null ? "" : " " + alternative), scope);
+	}
+
+	/**
 	 * Converts a list of GAML variables into an array of Choco integer variables.
 	 *
 	 * @param scope

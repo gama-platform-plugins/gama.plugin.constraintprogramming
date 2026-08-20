@@ -281,7 +281,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the variable takes one of the values of the list.",
+			value = "Builds the constraint stating that the variable takes one of the values of the list. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "do post(member(x, [1, 3, 7]));",
 					isExecutable = false) },
@@ -301,7 +301,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the variable takes none of the values of the list.",
+			value = "Builds the constraint stating that the variable takes none of the values of the list. Only available with the 'choco' engine.",
 			see = { "member" })
 	@no_test
 	public static GamaConstraint notMember(final IScope scope, final GamaVariable var, final IList<Integer> values)
@@ -322,7 +322,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that all the variables of the list take distinct values.",
+			value = "Builds the constraint stating that all the variables of the list take distinct values. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "do post(all_different(queens));",
 					isExecutable = false) },
@@ -342,7 +342,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that all the variables of the list take distinct values, except those taking the value 0, which is used to denote an absence of assignment.",
+			value = "Builds the constraint stating that all the variables of the list take distinct values, except those taking the value 0, which is used to denote an absence of assignment. Only available with the 'choco' engine.",
 			see = { "all_different" })
 	@no_test
 	public static GamaConstraint allDifferentExcept0(final IScope scope, final IList<GamaVariable> vars)
@@ -359,7 +359,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that all the variables of the list take the same value.",
+			value = "Builds the constraint stating that all the variables of the list take the same value. Only available with the 'choco' engine.",
 			see = { "not_all_equal", "all_different" })
 	@no_test
 	public static GamaConstraint allEqual(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
@@ -375,7 +375,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that at least two variables of the list take different values.",
+			value = "Builds the constraint stating that at least two variables of the list take different values. Only available with the 'choco' engine.",
 			see = { "all_equal" })
 	@no_test
 	public static GamaConstraint notAllEqual(final IScope scope, final IList<GamaVariable> vars)
@@ -392,7 +392,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the first variable is equal to the value read in the table at the index given by the third operand. Indices start at 0.",
+			value = "Builds the constraint stating that the first variable is equal to the value read in the table at the index given by the third operand. Indices start at 0. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "do post(element(cost, [10, 4, 7], choice));",
 					isExecutable = false) },
@@ -413,7 +413,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the first variable is equal to the number of variables of the second operand taking one of the values of the third.",
+			value = "Builds the constraint stating that the first variable is equal to the number of variables of the second operand taking one of the values of the third. Only available with the 'choco' engine.",
 			comment = "Named among_values rather than among because among is already an operator of the core library.",
 			see = { "count_var", "global_cardinality" })
 	@no_test
@@ -432,7 +432,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the second operand is equal to the number of distinct values taken by the variables of the first.",
+			value = "Builds the constraint stating that the second operand is equal to the number of distinct values taken by the variables of the first. Only available with the 'choco' engine.",
 			see = { "at_least_n_values", "at_most_n_values", "all_different" })
 	@no_test
 	public static GamaConstraint nValues(final IScope scope, final IList<GamaVariable> vars, final GamaVariable nb)
@@ -449,7 +449,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the variables of the first operand take at least as many distinct values as the second operand.",
+			value = "Builds the constraint stating that the variables of the first operand take at least as many distinct values as the second operand. Only available with the 'choco' engine.",
 			see = { "n_values", "at_most_n_values" })
 	@no_test
 	public static GamaConstraint atLeastNValues(final IScope scope, final IList<GamaVariable> vars, final GamaVariable nb)
@@ -466,7 +466,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the variables of the first operand take at most as many distinct values as the second operand.",
+			value = "Builds the constraint stating that the variables of the first operand take at most as many distinct values as the second operand. Only available with the 'choco' engine.",
 			see = { "n_values", "at_least_n_values" })
 	@no_test
 	public static GamaConstraint atMostNValues(final IScope scope, final IList<GamaVariable> vars, final GamaVariable nb)
@@ -483,7 +483,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that, for each index i, the number of variables of the first operand taking the value values[i] is equal to occurrences[i]. If the last operand is true, the variables can only take values listed in the second operand.",
+			value = "Builds the constraint stating that, for each index i, the number of variables of the first operand taking the value values[i] is equal to occurrences[i]. If the last operand is true, the variables can only take values listed in the second operand. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "do post(global_cardinality(slots, [1, 2, 3], loads, true));",
 					isExecutable = false) },
@@ -510,7 +510,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that each variable of the list is greater than or equal to the previous one, plus the delta given as second operand. A delta of 1 makes the sequence strictly increasing.",
+			value = "Builds the constraint stating that each variable of the list is greater than or equal to the previous one, plus the delta given as second operand. A delta of 1 makes the sequence strictly increasing. Only available with the 'choco' engine.",
 			see = { "decreasing", "sorted" })
 	@no_test
 	public static GamaConstraint increasing(final IScope scope, final IList<GamaVariable> vars, final int delta)
@@ -527,7 +527,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that each variable of the list is smaller than or equal to the previous one, minus the delta given as second operand.",
+			value = "Builds the constraint stating that each variable of the list is smaller than or equal to the previous one, minus the delta given as second operand. Only available with the 'choco' engine.",
 			see = { "increasing" })
 	@no_test
 	public static GamaConstraint decreasing(final IScope scope, final IList<GamaVariable> vars, final int delta)
@@ -544,7 +544,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the second list contains the same values as the first, in increasing order.",
+			value = "Builds the constraint stating that the second list contains the same values as the first, in increasing order. Only available with the 'choco' engine.",
 			comment = "Named sorted rather than sort because sort is already an operator of the core library.",
 			see = { "increasing" })
 	@no_test
@@ -562,7 +562,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the first list is strictly smaller than the second in the lexicographic order. Useful to break symmetries between interchangeable groups of variables.",
+			value = "Builds the constraint stating that the first list is strictly smaller than the second in the lexicographic order. Useful to break symmetries between interchangeable groups of variables. Only available with the 'choco' engine.",
 			see = { "lex_less_eq" })
 	@no_test
 	public static GamaConstraint lexLess(final IScope scope, final IList<GamaVariable> first,
@@ -579,7 +579,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the first list is smaller than or equal to the second in the lexicographic order.",
+			value = "Builds the constraint stating that the first list is smaller than or equal to the second in the lexicographic order. Only available with the 'choco' engine.",
 			see = { "lex_less" })
 	@no_test
 	public static GamaConstraint lexLessEq(final IScope scope, final IList<GamaVariable> first,
@@ -596,7 +596,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that first[j] = i if and only if second[i] = j. Used to keep two complementary views of the same assignment consistent.",
+			value = "Builds the constraint stating that first[j] = i if and only if second[i] = j. Used to keep two complementary views of the same assignment consistent. Only available with the 'choco' engine.",
 			comment = "Named inverse_channeling rather than inverse because inverse is already an operator of the core library.",
 			see = { "element" })
 	@no_test
@@ -619,7 +619,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the variables, read as successors (vars[i] = j meaning that j follows i), form a single hamiltonian circuit. Indices start at 0.",
+			value = "Builds the constraint stating that the variables, read as successors (vars[i] = j meaning that j follows i), form a single hamiltonian circuit. Indices start at 0. Only available with the 'choco' engine.",
 			see = { "sub_circuit", "path", "tree" })
 	@no_test
 	public static GamaConstraint circuit(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
@@ -635,7 +635,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the variables, read as successors, form a single circuit visiting exactly as many nodes as the second operand indicates, the others pointing to themselves.",
+			value = "Builds the constraint stating that the variables, read as successors, form a single circuit visiting exactly as many nodes as the second operand indicates, the others pointing to themselves. Only available with the 'choco' engine.",
 			see = { "circuit" })
 	@no_test
 	public static GamaConstraint subCircuit(final IScope scope, final IList<GamaVariable> vars, final GamaVariable size)
@@ -652,7 +652,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the variables, read as successors, form a single hamiltonian path going from the node given as second operand to the one given as third.",
+			value = "Builds the constraint stating that the variables, read as successors, form a single hamiltonian path going from the node given as second operand to the one given as third. Only available with the 'choco' engine.",
 			see = { "circuit" })
 	@no_test
 	public static GamaConstraint path(final IScope scope, final IList<GamaVariable> vars, final GamaVariable start,
@@ -670,7 +670,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the variables, read as predecessors, form an anti-arborescence made of as many trees as the second operand indicates.",
+			value = "Builds the constraint stating that the variables, read as predecessors, form an anti-arborescence made of as many trees as the second operand indicates. Only available with the 'choco' engine.",
 			see = { "circuit", "path" })
 	@no_test
 	public static GamaConstraint tree(final IScope scope, final IList<GamaVariable> vars, final GamaVariable nbRoots)
@@ -687,7 +687,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that, item i being placed in the bin given by itemBin[i] and weighing itemSize[i], each bin b carries the load binLoad[b]. The last operand is the index of the first bin.",
+			value = "Builds the constraint stating that, item i being placed in the bin given by itemBin[i] and weighing itemSize[i], each bin b carries the load binLoad[b]. The last operand is the index of the first bin. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "do post(bin_packing(assignment, [4, 2, 3], loads, 0));",
 					isExecutable = false) },
@@ -712,7 +712,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint linking the number of occurrences of each item, the total weight and the total energy, given the weight and the energy of each item.",
+			value = "Builds the constraint linking the number of occurrences of each item, the total weight and the total energy, given the weight and the energy of each item. Only available with the 'choco' engine.",
 			see = { "bin_packing", "scalar" })
 	@no_test
 	public static GamaConstraint knapsack(final IScope scope, final IList<GamaVariable> occurrences,
@@ -732,7 +732,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the values taken by the variables form one of the rows of the matrix. Each row is one allowed combination, and the matrix must have as many columns as there are variables.",
+			value = "Builds the constraint stating that the values taken by the variables form one of the rows of the matrix. Each row is one allowed combination, and the matrix must have as many columns as there are variables. Only available with the 'choco' engine.",
 			comment = "This is the way to express a relation that has no analytical form: a tabulated response curve, an empirical compatibility table, a rule set given by extension. A table propagates strongly, since it reasons over the whole relation at once, but its size grows as the product of the domains.",
 			examples = { @example (
 					value = "do post(table(vars, matrix([[1, 2], [2, 4], [3, 8]])));",
@@ -752,7 +752,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the values taken by the variables form one of the rows of the matrix when the last operand is true, and none of them when it is false.",
+			value = "Builds the constraint stating that the values taken by the variables form one of the rows of the matrix when the last operand is true, and none of them when it is false. Only available with the 'choco' engine.",
 			see = { "table" })
 	@no_test
 	public static GamaConstraint table(final IScope scope, final IList<GamaVariable> vars, final IMatrix rows,
@@ -789,7 +789,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that all the constraints of the list hold.",
+			value = "Builds the constraint stating that all the constraints of the list hold. Only available with the 'choco' engine.",
 			see = { "or_all", "opposite", "if_then" })
 	@no_test
 	public static GamaConstraint andAll(final IScope scope, final IList<GamaConstraint> constraints)
@@ -806,7 +806,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that at least one of the constraints of the list holds.",
+			value = "Builds the constraint stating that at least one of the constraints of the list holds. Only available with the 'choco' engine.",
 			see = { "and_all", "opposite", "if_then" })
 	@no_test
 	public static GamaConstraint orAll(final IScope scope, final IList<GamaConstraint> constraints)
@@ -823,7 +823,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that the constraint given as operand does not hold.",
+			value = "Builds the constraint stating that the constraint given as operand does not hold. Only available with the 'choco' engine.",
 			comment = "Named opposite rather than not because not is already an operator of the core library.",
 			see = { "and_all", "or_all" })
 	@no_test
@@ -842,7 +842,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that if the first constraint holds, then the second one holds too.",
+			value = "Builds the constraint stating that if the first constraint holds, then the second one holds too. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "do post(if_then(arithm(x, \"=\", 1), arithm(y, \">\", 5)));",
 					isExecutable = false) },
@@ -865,7 +865,7 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a boolean variable that is true if and only if the constraint given as operand holds. Reifying a constraint adds the link between the constraint and the variable to the problem immediately; the constraint itself is not posted, and does not have to hold.",
+			value = "Returns a boolean variable that is true if and only if the constraint given as operand holds. Reifying a constraint adds the link between the constraint and the variable to the problem immediately; the constraint itself is not posted, and does not have to hold. Only available with the 'choco' engine.",
 			examples = { @example (
 					value = "pb_variable is_late <- reify(arithm(end, \">\", deadline));",
 					isExecutable = false) },
@@ -874,7 +874,8 @@ public class Constraints {
 	public static GamaVariable reify(final IScope scope, final GamaConstraint constraint) throws GamaRuntimeException {
 		if (constraint == null) throw GamaRuntimeException.error("Cannot reify a nil constraint", scope);
 		final GamaProblem p = constraint.getProblem();
-		return p.register(constraint.getConstraint().reify());
+		CPUtils.requireConstraintEngine(scope, p, "reify", null);
+		return p.register(constraint.getChocoConstraint(scope).reify());
 	}
 
 	/**
