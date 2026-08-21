@@ -27,6 +27,11 @@ global {
 	string engine <- "highs" among: ["highs", "lp", "choco"];
 
 	init {
+		write "run one step of the model to solve";
+	}
+	
+	reflex solving{
+		float start <- gama.machine_time;
 		problem p <- problem("production", engine);
 
 		// One quantity per product. An upper bound is needed by both engines, and the capacity
@@ -40,6 +45,7 @@ global {
 		do post(unit_profit[0] * make_a + unit_profit[1] * make_b = profit);
 
 		solution best <- maximize(p, profit);
+		float end <- gama.machine_time;
 
 		if (best.exists) {
 			write "engine: " + engine;
@@ -51,6 +57,7 @@ global {
 			write "  material used: "
 				+ (material[0] * value_of(best, make_a) + material[1] * value_of(best, make_b))
 				+ " of " + material_stock;
+			write "Total resolution time:" + (end - start) + "ms";
 		} else {
 			write "No solution";
 		}
