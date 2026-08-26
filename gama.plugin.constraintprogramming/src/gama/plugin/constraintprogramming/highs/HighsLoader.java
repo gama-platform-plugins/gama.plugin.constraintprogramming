@@ -93,22 +93,45 @@ public class HighsLoader {
 		final Path directory = extractionDirectory();
 
 		// Dependencies are loaded before the library that needs them, so that the operating system finds them already
-		// in the process rather than looking for them along a search path that does not include this directory.
+		// in the process rather than looking for them along a search path that does not include this directory. 
+		// They are optional: a build that links them into the main library, as the Windows one does, ships none of them.
+		for (final String file : dependenciesFor(os)) {
+			final Path copy = extract(os, arch, file, directory);
+			if (copy != null) { System.load(copy.toAbsolutePath().toString()); }
+		}
+
 		Path main = null;
 		for (final String file : filesFor(os)) {
-			final Path copy = extract(os, arch, file, directory);
-			if (copy == null) { continue; }
-			if (file.contains(HighsLibrary.NAME)) {
-				main = copy;
-			} else {
-				System.load(copy.toAbsolutePath().toString());
-			}
+			main = extract(os, arch, file, directory);
+			if (main != null) { break; }
 		}
 		if (main == null) { throw new IOException(whatIsMissing(os, arch)); }
 
 		// Also declared for JNA, which is what resolves any library this one asks for by name
 		System.setProperty("jna.library.path", directory.toAbsolutePath().toString());
 		return Native.load(main.toAbsolutePath().toString(), HighsLibrary.class);
+	}
+
+	/**
+	 * The libraries HiGHS itself may need, to be loaded before it, when the plugin carries them.
+	 *
+	 * <p>
+	 * Building HiGHS with shared libraries turns every one of its targets into a shared library, {@code highs_extras}
+	 * among them, and the main one then resolves three symbols from it at load time. A build that keeps that code
+	 * inside the main library instead, as the shipped Windows one does, produces nothing here and the lookup simply
+	 * finds no file.
+	 * </p>
+	 *
+	 * @param os
+	 *            the folder of this operating system
+	 * @return the file names, in the order they have to be loaded
+	 */
+	private static List<String> dependenciesFor(final String os) {
+		return switch (os) {
+			case "win32" -> List.of("highs_extras.dll", "libhighs_extras.dll");
+			case "macosx" -> List.of("libhighs_extras.dylib");
+			default -> List.of("libhighs_extras.so");
+		};
 	}
 
 	/**

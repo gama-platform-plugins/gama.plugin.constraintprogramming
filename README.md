@@ -189,6 +189,8 @@ Binaries are currently shipped for Windows on x86_64 only. Adding a platform mea
 
 The file has to be a shared library, not a static archive: `highs.dll` on Windows, `libhighs.so` on Linux, `libhighs.dylib` on macOS. A `.a` or a `.lib` is meant for a compiler and is inert once the program runs, so it cannot be loaded whatever it is named. HiGHS builds a static archive by default; a shared one comes from a release built as such, or from a build configured with `-DBUILD_SHARED_LIBS=ON`. The engine names this case when it reports why it could not load.
 
+Such a build turns every HiGHS target into a shared library, including `highs_extras`, from which the main one resolves three symbols. When it produces a separate `libhighs_extras.so` alongside `libhighs.so`, drop both in the folder: the loader loads that one first, and ignores it when it is absent, as it is in a build that keeps the code inside the main library.
+
 ## Declaring variables
 
 | Operator | Returns | |
