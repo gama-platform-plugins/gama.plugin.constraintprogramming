@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 import com.sun.jna.Native;
 
@@ -103,8 +104,7 @@ public class HighsLoader {
 				System.load(copy.toAbsolutePath().toString());
 			}
 		}
-		if (main == null) throw new IOException("no HiGHS binary is shipped for " + os + "/" + arch
-				+ ". Add one under native/" + os + "/" + arch + "/ in the plugin.");
+		if (main == null) { throw new IOException(whatIsMissing(os, arch)); }
 
 		// Also declared for JNA, which is what resolves any library this one asks for by name
 		System.setProperty("jna.library.path", directory.toAbsolutePath().toString());
@@ -112,7 +112,7 @@ public class HighsLoader {
 	}
 
 	/**
-	 * The files to look for, in the order they have to be loaded, dependencies first.
+	 * The names a shared library may bear on this platform, in the order they are tried.
 	 *
 	 * @param os
 	 *            the folder of this operating system
@@ -120,10 +120,46 @@ public class HighsLoader {
 	 */
 	private static List<String> filesFor(final String os) {
 		return switch (os) {
-			case "win32" -> List.of("highs.dll");
-			case "macosx" -> List.of("libhighs.dylib");
-			default -> List.of("libhighs.so");
+			case "win32" -> List.of("highs.dll", "libhighs.dll");
+			case "macosx" -> List.of("libhighs.dylib", "highs.dylib");
+			default -> List.of("libhighs.so", "highs.so");
 		};
+	}
+
+	/**
+	 * Explains what is missing, by looking at what the plugin actually carries for this platform.
+	 *
+	 * <p>
+	 * The distinction that matters here is between a shared library, which can be loaded at runtime, and a static
+	 * archive, which cannot: a .a or a .lib is meant for a compiler and is inert once the program is running. Dropping
+	 * one in place of the other is an easy mistake to make and an opaque one to diagnose, so it is named.
+	 * </p>
+	 *
+	 * @param os
+	 *            the folder of this operating system
+	 * @param arch
+	 *            the folder of this architecture
+	 * @return the message to report
+	 */
+	private static String whatIsMissing(final String os, final String arch) {
+		final String expected = filesFor(os).get(0);
+		final String folder = "native/" + os + "/" + arch;
+		final Path onDisk = besideTheClasses(folder);
+		if (onDisk != null) {
+			try (Stream<Path> files = Files.list(onDisk)) {
+				final List<String> archives = files.map(f -> f.getFileName().toString())
+						.filter(n -> n.endsWith(".a") || n.endsWith(".lib")).toList();
+				if (!archives.isEmpty()) return folder + " carries " + String.join(", ", archives)
+						+ ", which are static archives: they are meant for a compiler and cannot be loaded at runtime. "
+						+ "A shared library is needed, named " + expected
+						+ ". Take it from a HiGHS release built with shared libraries, or build one with "
+						+ "-DBUILD_SHARED_LIBS=ON.";
+			} catch (final IOException e) {
+				// The folder cannot be listed; fall through to the plain message
+			}
+		}
+		return "no HiGHS shared library is shipped for " + os + "/" + arch + ". Add " + expected + " under " + folder
+				+ " in the plugin.";
 	}
 
 	/**

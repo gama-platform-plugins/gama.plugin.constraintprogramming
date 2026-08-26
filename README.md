@@ -187,6 +187,8 @@ Loading is attempted once. When it fails, the engine reports why, distinguishing
 
 Binaries are currently shipped for Windows on x86_64 only. Adding a platform means dropping the shared library under `native/<os>/<arch>/` and declaring it in `Bundle-NativeCode`; nothing in the code changes.
 
+The file has to be a shared library, not a static archive: `highs.dll` on Windows, `libhighs.so` on Linux, `libhighs.dylib` on macOS. A `.a` or a `.lib` is meant for a compiler and is inert once the program runs, so it cannot be loaded whatever it is named. HiGHS builds a static archive by default; a shared one comes from a release built as such, or from a build configured with `-DBUILD_SHARED_LIBS=ON`. The engine names this case when it reports why it could not load.
+
 ## Declaring variables
 
 | Operator | Returns | |
