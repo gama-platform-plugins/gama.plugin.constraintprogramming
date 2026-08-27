@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.chocosolver.solver.Model;
-import org.chocosolver.solver.SettingsBuilder;
-import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.variables.Variable;
 
+import gama.plugin.constraintprogramming.engine.SolverEngine;
+import gama.plugin.constraintprogramming.engine.LinearEngine;
+import gama.plugin.constraintprogramming.engine.HighsEngine;
+import gama.plugin.constraintprogramming.engine.ChocoEngine;
 import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.variable;
@@ -70,20 +72,15 @@ import gama.api.utils.json.IJsonValue;
 				doc = { @doc ("The number of failures encountered during the last search. A failure is a dead end reached by propagation, which only a constraint engine has; on a linear engine this stays at zero") }) })
 public class GamaProblem implements IValue {
 
-	/** The underlying Choco model. */
-	private final Model model;
+	/** The engine this problem is solved with. Choco is one of them, not the shape the others have to fit. */
+	private final SolverEngine engine;
+
+	/** The name of the problem, held here rather than read back from an engine that may not keep one. */
+	private final String name;
 
 	/** The variables declared through this problem, by name, in declaration order. */
 	private final Map<String, GamaVariable> declared = new LinkedHashMap<>();
 
-	/** The branch and bound nodes the last linear search explored. */
-	private long lastNodes;
-
-	/** How many solutions the last linear search found. */
-	private int lastSolutions;
-
-	/** How long the last linear search took, in seconds. */
-	private double lastSearchTime;
 
 	/** Counter used to generate unique names for anonymous (derived) variables. */
 	private int anonymous;
@@ -162,9 +159,42 @@ public class GamaProblem implements IValue {
 	 */
 	public GamaProblem(final String name, final Backend backend) {
 		this.backend = backend;
-		final String actual = name == null ? "problem" : name;
-		model = backend == Backend.CHOCO_LCG
-				? new Model(actual, new SettingsBuilder().setLCG(true).build()) : new Model(actual);
+		this.name = name == null ? "problem" : name;
+		this.engine = switch (backend) {
+			case CHOCO -> new ChocoEngine(this.name, false);
+			case CHOCO_LCG -> new ChocoEngine(this.name, true);
+			case LP -> new LinearEngine();
+			case HIGHS -> new HighsEngine();
+		};
+	}
+
+	/**
+	 * Gets the engine that solves this problem.
+	 *
+	 * @return the engine
+	 */
+	public SolverEngine getEngine() { return engine; }
+
+	/**
+	 * Gets the engine as a constraint engine, for an operator only a constraint engine can honour.
+	 *
+	 * <p>
+	 * Asking for the Choco engine and checking that this problem has one are the same step here, so an operator cannot
+	 * reach a Choco solver without having said which operator it is and what to do instead.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current scope, used to report the error
+	 * @param operator
+	 *            the name of the operator asking, named in the error
+	 * @return the constraint engine
+	 * @throws GamaRuntimeException
+	 *             if this problem is solved by another engine
+	 */
+	public ChocoEngine requireChoco(final IScope scope, final String operator) throws GamaRuntimeException {
+		if (engine instanceof ChocoEngine c) return c;
+		throw GamaRuntimeException.error(operator + " is only available with the 'choco' engine, and this problem "
+				+ "uses '" + backend.getLabel() + "'.", scope);
 	}
 
 	/**
@@ -230,14 +260,14 @@ public class GamaProblem implements IValue {
 	 *
 	 * @return the model
 	 */
-	public Model getModel() { return model; }
+	public Model getModel() { return requireChoco(null, "This operation").getModel(); }
 
 	/**
 	 * Gets the Choco solver attached to the model.
 	 *
 	 * @return the solver
 	 */
-	public Solver getSolver() { return model.getSolver(); }
+	public Model getModelIfAny() { return engine instanceof ChocoEngine c ? c.getModel() : null; }
 
 	/**
 	 * Registers a Choco variable in this problem and returns the GAML wrapper around it.
@@ -303,7 +333,7 @@ public class GamaProblem implements IValue {
 	}
 
 	@getter ("name")
-	public String getProblemName() { return model.getName(); }
+	public String getProblemName() { return name; }
 
 	@getter ("nb_variables")
 	public int getNbVariables() { return declared.size(); }
@@ -320,52 +350,30 @@ public class GamaProblem implements IValue {
 
 	@getter ("solutions")
 	public int getNbSolutions() {
-		return isLinear() ? lastSolutions : (int) model.getSolver().getSolutionCount();
+		return engine.getSolutions();
 	}
 
 	@getter ("search_time")
-	public double getSearchTime() { return isLinear() ? lastSearchTime : model.getSolver().getTimeCount(); }
+	public double getSearchTime() { return engine.getSearchTime(); }
 
 	@getter ("nodes")
-	public int getNodes() { return isLinear() ? (int) lastNodes : (int) model.getSolver().getNodeCount(); }
+	public int getNodes() { return (int) engine.getNodes(); }
 
 	@getter ("fails")
-	public int getFails() { return isLinear() ? 0 : (int) model.getSolver().getFailCount(); }
-
-	/**
-	 * Records what the last search cost, as reported by the engine that ran it.
-	 *
-	 * <p>
-	 * A constraint engine keeps these figures itself, and they are read from it. A linear engine is a separate solver,
-	 * in HiGHS a separate library altogether, so what it reports has to be brought back here or the attributes would
-	 * describe a Choco search that never happened, and read zero.
-	 * </p>
-	 *
-	 * @param nodes
-	 *            the branch and bound nodes explored, zero for a problem with no integer variable, which has no tree
-	 * @param solutions
-	 *            how many solutions were found
-	 * @param seconds
-	 *            how long the search took
-	 */
-	public void recordSearch(final long nodes, final int solutions, final double seconds) {
-		this.lastNodes = nodes;
-		this.lastSolutions = solutions;
-		this.lastSearchTime = seconds;
-	}
+	public int getFails() { return (int) engine.getFails(); }
 
 	@Override
 	public IType<?> getGamlType() { return Types.get(GamaProblemType.id); }
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
-		return "problem " + model.getName() + " (" + model.getNbVars() + " variables, " + model.getNbCstrs()
+		return "problem " + name + " (" + getNbVariables() + " variables, " + getNbConstraints()
 				+ " constraints)";
 	}
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		return "problem(\"" + model.getName() + "\")";
+		return "problem(\"" + name + "\")";
 	}
 
 	/**
@@ -379,8 +387,8 @@ public class GamaProblem implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType()).add("name", model.getName()).add("nb_variables", model.getNbVars())
-				.add("nb_constraints", model.getNbCstrs());
+		return json.typedObject(getGamlType()).add("name", name).add("nb_variables", getNbVariables())
+				.add("nb_constraints", getNbConstraints());
 	}
 
 }

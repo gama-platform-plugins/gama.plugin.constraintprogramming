@@ -10,6 +10,7 @@ import com.sun.jna.Pointer;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.plugin.constraintprogramming.engine.HighsEngine;
 import gama.plugin.constraintprogramming.GamaConstraint;
 import gama.plugin.constraintprogramming.GamaProblem;
 import gama.plugin.constraintprogramming.GamaSolution;
@@ -360,7 +361,9 @@ public class HighsCompiler {
 				|| model == HighsLibrary.MODEL_STATUS_TIME_LIMIT
 				|| model == HighsLibrary.MODEL_STATUS_ITERATION_LIMIT
 				|| model == HighsLibrary.MODEL_STATUS_INTERRUPT;
-		problem.recordSearch(nodes, found ? 1 : 0, highs.Highs_getRunTime(handle));
+		if (problem.getEngine() instanceof HighsEngine e) {
+			e.record(nodes, found ? 1 : 0, highs.Highs_getRunTime(handle));
+		}
 	}
 
 }

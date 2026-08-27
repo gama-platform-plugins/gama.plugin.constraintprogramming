@@ -6,6 +6,7 @@ import org.chocosolver.solver.search.strategy.Search;
 import org.chocosolver.solver.search.strategy.strategy.AbstractStrategy;
 import org.chocosolver.solver.variables.IntVar;
 
+import gama.plugin.constraintprogramming.engine.ChocoEngine;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -104,13 +105,13 @@ public class Strategies {
 	public static GamaProblem useStrategy(final IScope scope, final GamaProblem problem, final String name)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "use_strategy", null);
-		final IntVar[] all = problem.getModel().retrieveIntVars(true);
+		final ChocoEngine choco = problem.requireChoco(scope, "use_strategy");
+		final IntVar[] all = choco.getModel().retrieveIntVars(true);
 		final AbstractStrategy strategy = strategyNamed(scope, name, all);
 		if (strategy == null) {
-			Search.defaultSearch(problem.getModel());
+			Search.defaultSearch(choco.getModel());
 		} else {
-			problem.getSolver().setSearch(strategy);
+			choco.getSolver().setSearch(strategy);
 		}
 		return problem;
 	}
@@ -133,16 +134,16 @@ public class Strategies {
 	public static GamaProblem useStrategy(final IScope scope, final GamaProblem problem, final String name,
 			final IList<GamaVariable> vars) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "use_strategy", null);
+		final ChocoEngine choco = problem.requireChoco(scope, "use_strategy");
 		if (vars == null || vars.isEmpty()) return useStrategy(scope, problem, name);
 		final AbstractStrategy strategy = strategyNamed(scope, name, CPUtils.intVars(scope, vars));
 		if (strategy == null) {
-			Search.defaultSearch(problem.getModel());
+			Search.defaultSearch(choco.getModel());
 		} else {
-			problem.getSolver().setSearch(strategy);
+			choco.getSolver().setSearch(strategy);
 			// The declared strategy only covers part of the variables: without this, the search could stop on a node
 			// where the others are still undecided.
-			problem.getSolver().makeCompleteStrategy(true);
+			choco.getSolver().makeCompleteStrategy(true);
 		}
 		return problem;
 	}
@@ -154,11 +155,11 @@ public class Strategies {
 	 *            the problem
 	 * @return the current strategy
 	 */
-	private static AbstractStrategy currentStrategy(final GamaProblem problem) {
-		final Solver solver = problem.getSolver();
+	private static AbstractStrategy currentStrategy(final ChocoEngine choco) {
+		final Solver solver = choco.getSolver();
 		AbstractStrategy current = solver.getSearch();
 		if (current == null) {
-			Search.defaultSearch(problem.getModel());
+			Search.defaultSearch(choco.getModel());
 			current = solver.getSearch();
 		}
 		return current;
@@ -182,8 +183,8 @@ public class Strategies {
 	public static GamaProblem withLastConflict(final IScope scope, final GamaProblem problem)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "with_last_conflict", null);
-		problem.getSolver().setSearch(Search.lastConflict(currentStrategy(problem)));
+		final ChocoEngine choco = problem.requireChoco(scope, "with_last_conflict");
+		choco.getSolver().setSearch(Search.lastConflict(currentStrategy(choco)));
 		return problem;
 	}
 
@@ -201,8 +202,8 @@ public class Strategies {
 	public static GamaProblem withConflictOrdering(final IScope scope, final GamaProblem problem)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "with_conflict_ordering", null);
-		problem.getSolver().setSearch(Search.conflictOrderingSearch(currentStrategy(problem)));
+		final ChocoEngine choco = problem.requireChoco(scope, "with_conflict_ordering");
+		choco.getSolver().setSearch(Search.conflictOrderingSearch(currentStrategy(choco)));
 		return problem;
 	}
 
@@ -220,9 +221,9 @@ public class Strategies {
 	public static GamaProblem withBestBound(final IScope scope, final GamaProblem problem)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "with_best_bound", null);
+		final ChocoEngine choco = problem.requireChoco(scope, "with_best_bound");
 		try {
-			problem.getSolver().setSearch(Search.bestBound(currentStrategy(problem)));
+			choco.getSolver().setSearch(Search.bestBound(currentStrategy(choco)));
 		} catch (final ClassCastException e) {
 			throw GamaRuntimeException
 					.error("with_best_bound only applies to a strategy branching on integer variables", scope);
@@ -248,11 +249,11 @@ public class Strategies {
 	public static GamaProblem useRestarts(final IScope scope, final GamaProblem problem, final String policy,
 			final int cutoff) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "use_restarts", null);
+		final ChocoEngine choco = problem.requireChoco(scope, "use_restarts");
 		if (cutoff <= 0 && !"on_solution".equals(policy))
 			throw GamaRuntimeException.error("The cutoff of a restart policy must be strictly positive", scope);
-		final Solver solver = problem.getSolver();
-		final FailCounter counter = new FailCounter(problem.getModel(), cutoff);
+		final Solver solver = choco.getSolver();
+		final FailCounter counter = new FailCounter(choco.getModel(), cutoff);
 		switch (policy) {
 			case "luby" -> solver.setLubyRestart(cutoff, counter, Integer.MAX_VALUE);
 			case "geometric" -> solver.setGeometricalRestart(cutoff, 1.2, counter, Integer.MAX_VALUE);
@@ -283,8 +284,8 @@ public class Strategies {
 	public static GamaProblem recordNogoods(final IScope scope, final GamaProblem problem)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to configure a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "record_nogoods", null);
-		problem.getSolver().setNoGoodRecordingFromRestarts();
+		final ChocoEngine choco = problem.requireChoco(scope, "record_nogoods");
+		choco.getSolver().setNoGoodRecordingFromRestarts();
 		return problem;
 	}
 

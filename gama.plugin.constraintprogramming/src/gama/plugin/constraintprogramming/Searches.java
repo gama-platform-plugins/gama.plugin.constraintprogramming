@@ -1,10 +1,11 @@
 package gama.plugin.constraintprogramming;
 
-import org.chocosolver.solver.Solution;
 import org.chocosolver.solver.Solver;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.util.criteria.Criterion;
 
+import gama.plugin.constraintprogramming.terms.Term;
+import gama.plugin.constraintprogramming.engine.ChocoEngine;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -50,25 +51,8 @@ public class Searches {
 	private static GamaSolution run(final IScope scope, final GamaProblem problem, final GamaVariable objective,
 			final boolean maximise, final Double within) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to search a nil problem", scope);
-		if (problem.isLinear()) {
-			// A linear engine builds its program from the recorded relations and solves it in one go: there is no
-			// incremental search to interrupt.
-			if (problem.getBackend() == GamaProblem.Backend.HIGHS) return gama.plugin.constraintprogramming.highs
-					.HighsCompiler.solve(scope, problem, objective == null ? null
-							: new gama.plugin.constraintprogramming.terms.Term.Var(objective), maximise, within);
-			return LinearCompiler.solve(scope, problem, objective, maximise);
-		}
-		final Solver solver = problem.getSolver();
-		final Criterion interrupted = scope::interrupted;
-		solver.addStopCriterion(interrupted);
-		if (within != null && within > 0) { solver.limitTime((long) (within * 1000)); }
-		try {
-			if (objective != null)
-				return new GamaSolution(problem, solver.findOptimalSolution(objective.asIntVar(scope), maximise));
-			return new GamaSolution(problem, solver.findSolution());
-		} finally {
-			solver.removeStopCriterion(interrupted);
-		}
+		return problem.getEngine().solve(scope, problem, objective == null ? null : new Term.Var(objective), maximise,
+				within);
 	}
 
 	/**
@@ -247,10 +231,10 @@ public class Searches {
 	public static int hintFrom(final IScope scope, final GamaProblem problem, final GamaSolution solution)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to hint a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "hint_from", null);
+		final ChocoEngine choco = problem.requireChoco(scope, "hint_from");
 		if (solution == null || !solution.exists()) return 0;
 		int applied = 0;
-		final Solver solver = problem.getSolver();
+		final Solver solver = choco.getSolver();
 		for (final GamaVariable source : solution.getProblem().getVariables()) {
 			final GamaVariable target = problem.getVariable(source.getVariableName());
 			if (target == null || !(target.getVariable() instanceof IntVar iv)) { continue; }
@@ -279,8 +263,8 @@ public class Searches {
 	public static GamaVariable addHint(final IScope scope, final GamaVariable variable, final int value)
 			throws GamaRuntimeException {
 		if (variable == null) throw GamaRuntimeException.error("Trying to hint a nil variable", scope);
-		CPUtils.requireConstraintEngine(scope, variable.getProblem(), "add_hint", null);
-		variable.getProblem().getSolver().addHint(variable.asIntVar(scope), value);
+		final ChocoEngine choco = variable.getProblem().requireChoco(scope, "add_hint");
+		choco.getSolver().addHint(variable.asIntVar(scope), value);
 		return variable;
 	}
 
@@ -297,8 +281,8 @@ public class Searches {
 	@no_test
 	public static GamaProblem clearHints(final IScope scope, final GamaProblem problem) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to clear the hints of a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "clear_hints", null);
-		problem.getSolver().removeHints();
+		final ChocoEngine choco = problem.requireChoco(scope, "clear_hints");
+		choco.getSolver().removeHints();
 		return problem;
 	}
 
@@ -319,8 +303,8 @@ public class Searches {
 	@no_test
 	public static GamaProblem reset(final IScope scope, final GamaProblem problem) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to reset a nil problem", scope);
-		CPUtils.requireConstraintEngine(scope, problem, "reset", "A linear engine keeps no search state to reset.");
-		problem.getSolver().reset();
+		final ChocoEngine choco = problem.requireChoco(scope, "reset");
+		choco.getSolver().reset();
 		return problem;
 	}
 
@@ -338,22 +322,7 @@ public class Searches {
 	private static IList<GamaSolution> enumerate(final IScope scope, final GamaProblem problem, final int limit)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Trying to search a nil problem", scope);
-		if (problem.isLinear()) throw GamaRuntimeException
-				.error("Enumerating solutions is only available with the 'choco' engine", scope);
-		final IList<GamaSolution> result = GamaListFactory.create(Types.get(GamaSolutionType.id));
-		final Solver solver = problem.getSolver();
-		final Criterion interrupted = scope::interrupted;
-		solver.addStopCriterion(interrupted);
-		try {
-			while (solver.solve()) {
-				result.add(new GamaSolution(problem, new Solution(problem.getModel()).record()));
-				if (limit > 0 && result.size() >= limit) { break; }
-				if (scope.interrupted()) { break; }
-			}
-		} finally {
-			solver.removeStopCriterion(interrupted);
-		}
-		return result;
+		return problem.getEngine().enumerate(scope, problem, limit);
 	}
 
 }
