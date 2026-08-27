@@ -124,10 +124,10 @@ A constraint asserts a *family* of relations rather than a single one, which is 
 | `nb_variables` | `int` | number of variables declared |
 | `nb_constraints` | `int` | number of constraints posted |
 | `variables` | `list<pb_variable>` | in declaration order |
-| `solutions` | `int` | solutions found by the last search |
-| `search_time` | `float` | duration of the last search, in seconds |
-| `nodes` | `int` | nodes explored |
-| `fails` | `int` | failures encountered |
+| `solutions` | `int` | solutions found by the last search; a linear engine reports 1 or 0, since it does not enumerate |
+| `search_time` | `float` | duration of the last search, in seconds, from whichever engine ran it |
+| `nodes` | `int` | branch and bound nodes explored; genuinely 0 for a problem settled without branching |
+| `fails` | `int` | dead ends reached by propagation, so 0 on a linear engine |
 
 **`pb_variable`**
 
@@ -177,7 +177,8 @@ Everything in this reference works on every engine unless its documentation says
 | `all_solutions` | yes | no |
 | hints, `reset`, search strategies | yes | no |
 | `read_mps` | yes, if the file is integral | yes |
-| `nodes`, `fails`, `solutions`, `search_time` | reported | left at zero |
+| `nodes`, `search_time`, `solutions` | reported | reported, except `nodes` on `lp` |
+| `fails` | reported | 0, propagation has no counterpart |
 
 The derived variables are the one place where the distinction is not obvious. `sum_var(vars)` creates a variable and ties it to its operands through a constraint posted in Choco, which a linear engine never sees, so the variable would be left free and the answer quietly wrong. They are refused rather than accepted and mis-solved; write the sum as an expression instead, as in `a + b + c`.
 
@@ -188,6 +189,8 @@ Both linear engines take int, bool and continuous variables. The `lp` engine wor
 ### Shipping HiGHS
 
 HiGHS is a native solver. Its binaries live in the plugin under `native/<os>/<arch>/`, are copied to a temporary directory on first use and loaded from there by absolute path, so nothing has to be added to the `PATH` of the machine nor to `java.library.path`, which the platform reads once at startup and never again.
+
+These figures come from the engine that ran, not from the Choco solver, which a linear problem never starts. HiGHS reports its node count and its run time through its own API; the `lp` engine reports only a status, so its search time is measured around the call and its node count stays at zero.
 
 Loading is attempted once. When it fails, the engine reports why, distinguishing a missing binary from one that cannot be loaded, instead of letting a link error surface in the middle of a simulation. A model can then fall back to another engine.
 

@@ -55,19 +55,19 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = "solutions",
 				type = IType.INT,
-				doc = { @doc ("The number of solutions found so far by the last search. Only the constraint engine reports it; a linear engine leaves it at zero") }),
+				doc = { @doc ("How many solutions the last search found. A constraint engine counts every solution it went through on its way to the last one; a linear engine reports 1 when it came back with an assignment and 0 otherwise, since it does not enumerate") }),
 		@variable (
 				name = "search_time",
 				type = IType.FLOAT,
-				doc = { @doc ("The time, in seconds, spent in the last search") }),
+				doc = { @doc ("The time, in seconds, spent in the last search, as reported by whichever engine ran it. Filled in on every engine") }),
 		@variable (
 				name = "nodes",
 				type = IType.INT,
-				doc = { @doc ("The number of nodes explored during the last search. Only the constraint engine reports it") }),
+				doc = { @doc ("The number of nodes explored during the last search. Filled in on every engine, but it counts a branch and bound tree: a problem with no integer variable is settled without branching and genuinely reports zero, as does one small enough to be decided before branching starts") }),
 		@variable (
 				name = "fails",
 				type = IType.INT,
-				doc = { @doc ("The number of failures encountered during the last search. Only the constraint engine reports it") }) })
+				doc = { @doc ("The number of failures encountered during the last search. A failure is a dead end reached by propagation, which only a constraint engine has; on a linear engine this stays at zero") }) })
 public class GamaProblem implements IValue {
 
 	/** The underlying Choco model. */
@@ -75,6 +75,15 @@ public class GamaProblem implements IValue {
 
 	/** The variables declared through this problem, by name, in declaration order. */
 	private final Map<String, GamaVariable> declared = new LinkedHashMap<>();
+
+	/** The branch and bound nodes the last linear search explored. */
+	private long lastNodes;
+
+	/** How many solutions the last linear search found. */
+	private int lastSolutions;
+
+	/** How long the last linear search took, in seconds. */
+	private double lastSearchTime;
 
 	/** Counter used to generate unique names for anonymous (derived) variables. */
 	private int anonymous;
@@ -310,16 +319,40 @@ public class GamaProblem implements IValue {
 	}
 
 	@getter ("solutions")
-	public int getNbSolutions() { return (int) model.getSolver().getSolutionCount(); }
+	public int getNbSolutions() {
+		return isLinear() ? lastSolutions : (int) model.getSolver().getSolutionCount();
+	}
 
 	@getter ("search_time")
-	public double getSearchTime() { return model.getSolver().getTimeCount(); }
+	public double getSearchTime() { return isLinear() ? lastSearchTime : model.getSolver().getTimeCount(); }
 
 	@getter ("nodes")
-	public int getNodes() { return (int) model.getSolver().getNodeCount(); }
+	public int getNodes() { return isLinear() ? (int) lastNodes : (int) model.getSolver().getNodeCount(); }
 
 	@getter ("fails")
-	public int getFails() { return (int) model.getSolver().getFailCount(); }
+	public int getFails() { return isLinear() ? 0 : (int) model.getSolver().getFailCount(); }
+
+	/**
+	 * Records what the last search cost, as reported by the engine that ran it.
+	 *
+	 * <p>
+	 * A constraint engine keeps these figures itself, and they are read from it. A linear engine is a separate solver,
+	 * in HiGHS a separate library altogether, so what it reports has to be brought back here or the attributes would
+	 * describe a Choco search that never happened, and read zero.
+	 * </p>
+	 *
+	 * @param nodes
+	 *            the branch and bound nodes explored, zero for a problem with no integer variable, which has no tree
+	 * @param solutions
+	 *            how many solutions were found
+	 * @param seconds
+	 *            how long the search took
+	 */
+	public void recordSearch(final long nodes, final int solutions, final double seconds) {
+		this.lastNodes = nodes;
+		this.lastSolutions = solutions;
+		this.lastSearchTime = seconds;
+	}
 
 	@Override
 	public IType<?> getGamlType() { return Types.get(GamaProblemType.id); }

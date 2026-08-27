@@ -77,7 +77,11 @@ public class LinearCompiler {
 		compiler.declare(scope, problem);
 		compiler.constrain(scope, problem);
 		compiler.objective(scope, objective, maximise);
+		final long started = System.nanoTime();
 		final LinearProgram.Status status = compiler.program.branchAndBound();
+		final double elapsed = (System.nanoTime() - started) / 1e9;
+		// This solver reports no node nor iteration count, only a status, so the node count stays at zero
+		problem.recordSearch(0, status == LinearProgram.Status.FEASIBLE ? 1 : 0, elapsed);
 		if (status != LinearProgram.Status.FEASIBLE) return new GamaSolution(problem, (Map<String, Double>) null);
 		return new GamaSolution(problem, compiler.read());
 	}

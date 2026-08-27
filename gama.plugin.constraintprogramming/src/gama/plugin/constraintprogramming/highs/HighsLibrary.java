@@ -220,4 +220,39 @@ public interface HighsLibrary extends Library {
 	 */
 	double Highs_getObjectiveValue(Pointer highs);
 
+	/**
+	 * The wall clock time the last run took, in seconds.
+	 *
+	 * @param highs
+	 *            the model
+	 * @return the time in seconds
+	 */
+	double Highs_getRunTime(Pointer highs);
+
+	/**
+	 * Reads one of the integer figures the solver reports about its last run.
+	 *
+	 * @param highs
+	 *            the model
+	 * @param info
+	 *            the name of the figure, such as {@code simplex_iteration_count}
+	 * @param value
+	 *            a one element array the figure is written into
+	 * @return 0 when the figure exists
+	 */
+	int Highs_getIntInfoValue(Pointer highs, String info, int[] value);
+
+	/**
+	 * Reads one of the long figures the solver reports about its last run.
+	 *
+	 * @param highs
+	 *            the model
+	 * @param info
+	 *            the name of the figure, such as {@code mip_node_count}
+	 * @param value
+	 *            a one element array the figure is written into
+	 * @return 0 when the figure exists
+	 */
+	int Highs_getInt64InfoValue(Pointer highs, String info, long[] value);
+
 }

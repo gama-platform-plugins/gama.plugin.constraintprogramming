@@ -314,6 +314,7 @@ public class HighsCompiler {
 
 		highs.Highs_run(handle);
 		final int model = highs.Highs_getModelStatus(handle);
+		measure(problem, highs, handle, anyInteger, model);
 		if (model != HighsLibrary.MODEL_STATUS_OPTIMAL && model != HighsLibrary.MODEL_STATUS_TIME_LIMIT
 				&& model != HighsLibrary.MODEL_STATUS_ITERATION_LIMIT
 				&& model != HighsLibrary.MODEL_STATUS_INTERRUPT)
@@ -326,6 +327,40 @@ public class HighsCompiler {
 		final Map<String, Double> solution = new LinkedHashMap<>();
 		for (int i = 0; i < numCol; i++) { solution.put(columns.get(i).getVariableName(), colValue[i]); }
 		return new GamaSolution(problem, solution);
+	}
+
+	/**
+	 * Brings back what the solver reports about the run it just finished.
+	 *
+	 * <p>
+	 * Without this the attributes of the problem would describe the Choco solver, which never ran, and read zero. The
+	 * node count is the size of the branch and bound tree, so it is only asked for when the model has an integer
+	 * variable: a pure linear program is settled without branching and genuinely explores no node.
+	 * </p>
+	 *
+	 * @param problem
+	 *            the problem to record on
+	 * @param highs
+	 *            the library
+	 * @param handle
+	 *            the model
+	 * @param anyInteger
+	 *            whether the model was passed as a mixed integer program
+	 * @param model
+	 *            the status the solver returned
+	 */
+	private static void measure(final GamaProblem problem, final HighsLibrary highs, final Pointer handle,
+			final boolean anyInteger, final int model) {
+		long nodes = 0;
+		if (anyInteger) {
+			final long[] count = new long[1];
+			if (highs.Highs_getInt64InfoValue(handle, "mip_node_count", count) == 0) { nodes = count[0]; }
+		}
+		final boolean found = model == HighsLibrary.MODEL_STATUS_OPTIMAL
+				|| model == HighsLibrary.MODEL_STATUS_TIME_LIMIT
+				|| model == HighsLibrary.MODEL_STATUS_ITERATION_LIMIT
+				|| model == HighsLibrary.MODEL_STATUS_INTERRUPT;
+		problem.recordSearch(nodes, found ? 1 : 0, highs.Highs_getRunTime(handle));
 	}
 
 }
