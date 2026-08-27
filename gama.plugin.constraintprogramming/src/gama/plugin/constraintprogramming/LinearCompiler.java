@@ -6,9 +6,6 @@ import java.util.Map;
 
 import org.chocosolver.lp.LinearProgram;
 import org.chocosolver.lp.MILP;
-import org.chocosolver.solver.variables.BoolVar;
-import org.chocosolver.solver.variables.IntVar;
-import org.chocosolver.solver.variables.RealVar;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
@@ -99,34 +96,25 @@ public class LinearCompiler {
 		final Map<Integer, Double> spans = new LinkedHashMap<>();
 		for (final GamaVariable v : problem.declaredVariables()) {
 			if (v.isExpression()) { continue; }
-			final double lb;
-			final double ub;
-			final int i;
-			switch (v.getVariable()) {
-				case BoolVar b -> {
-					lb = 0;
-					ub = 1;
-					i = program.makeBoolean();
-				}
-				case IntVar iv -> {
-					lb = iv.getLB();
-					ub = iv.getUB();
-					i = program.makeInteger();
-				}
-				case RealVar rv -> {
-					lb = rv.getLB();
-					ub = rv.getUB();
-					i = program.makeVariable();
-				}
+			final GamaVariable.Kind kind = v.getVariableKind();
+			if (kind == null || kind == GamaVariable.Kind.SET)
+				throw GamaRuntimeException.error("The linear engine does not handle " + v.getVariableName()
+						+ ", which is a " + v.getKind() + " variable", scope);
+			final double lb = v.getLowerBound();
+			final double ub = v.getUpperBound();
+			final int i = switch (kind) {
+				case BOOL -> program.makeBoolean();
+				case INT -> program.makeInteger();
+				case REAL -> program.makeVariable();
 				default -> throw GamaRuntimeException.error("The linear engine does not handle "
 						+ v.getVariableName() + ", which is a " + v.getKind() + " variable", scope);
-			}
+			};
 			if (Double.isInfinite(lb)) throw GamaRuntimeException.error("The variable " + v.getVariableName()
 					+ " has no lower bound. The linear engine works in standard form, where every variable is shifted "
 					+ "to be non-negative, which needs a finite lower bound.", scope);
 			index.put(v, i);
 			shift.put(v, lb);
-			if (!(v.getVariable() instanceof BoolVar) && !Double.isInfinite(ub) && ub - lb < Double.MAX_VALUE / 8) {
+			if (kind != GamaVariable.Kind.BOOL && !Double.isInfinite(ub) && ub - lb < Double.MAX_VALUE / 8) {
 				spans.put(i, ub - lb);
 			}
 		}

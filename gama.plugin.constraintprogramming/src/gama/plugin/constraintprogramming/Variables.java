@@ -73,7 +73,7 @@ public class Variables {
 		if (low > high) throw GamaRuntimeException
 				.error("The domain of " + name + " is empty: its lower bound " + low + " is greater than its upper bound " + high, scope);
 		final boolean bounded = (long) high - low > ENUMERATION_THRESHOLD;
-		return problem.register(problem.getModel().intVar(name, low, high, bounded));
+		return problem.register(GamaVariable.ofInt(problem, name, low, high, bounded));
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class Variables {
 		final int[] domain = CPUtils.ints(scope, values);
 		if (domain.length == 0)
 			throw GamaRuntimeException.error("The domain given to the variable " + name + " is empty", scope);
-		return problem.register(problem.getModel().intVar(name, domain));
+		return problem.register(GamaVariable.ofInt(problem, name, domain));
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class Variables {
 	public static GamaVariable boolVar(final IScope scope, final GamaProblem problem, final String name)
 			throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Cannot declare the variable " + name + " in a nil problem", scope);
-		return problem.register(problem.getModel().boolVar(name));
+		return problem.register(GamaVariable.ofBool(problem, name));
 	}
 
 	/**
@@ -176,7 +176,7 @@ public class Variables {
 			final double ub) throws GamaRuntimeException {
 		if (problem == null) throw GamaRuntimeException.error("Cannot declare the variable " + name + " in a nil problem", scope);
 		if (lb > ub) throw GamaRuntimeException.error("The domain of " + name + " is empty", scope);
-		return problem.register(problem.getModel().realVar(name, lb, ub, problem.getModel().getPrecision()));
+		return problem.register(GamaVariable.ofReal(problem, name, lb, ub));
 	}
 
 	/**

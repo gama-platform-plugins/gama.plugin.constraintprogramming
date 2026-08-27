@@ -365,10 +365,9 @@ public class MpsReader {
 		if (integral) {
 			final int low = clamp(lb, true);
 			final int high = clamp(ub, false);
-			return problem.register(problem.getModel().intVar(columnName, low, high, (long) high - low > 65536));
+			return problem.register(GamaVariable.ofInt(problem, columnName, low, high, (long) high - low > 65536));
 		}
-		return problem.register(problem.getModel().realVar(columnName, clampReal(lb, true), clampReal(ub, false),
-				problem.getModel().getPrecision()));
+		return problem.register(GamaVariable.ofReal(problem, columnName, clampReal(lb, true), clampReal(ub, false)));
 	}
 
 	/**

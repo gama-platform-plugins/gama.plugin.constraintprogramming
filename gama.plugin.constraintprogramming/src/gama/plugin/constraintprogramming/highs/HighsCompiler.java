@@ -5,9 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.chocosolver.solver.variables.BoolVar;
-import org.chocosolver.solver.variables.IntVar;
-import org.chocosolver.solver.variables.RealVar;
 
 import com.sun.jna.Pointer;
 
@@ -126,25 +123,14 @@ public class HighsCompiler {
 	 */
 	private static void describe(final IScope scope, final GamaVariable v, final double[] lower, final double[] upper,
 			final int[] integrality, final int i) throws GamaRuntimeException {
-		switch (v.getVariable()) {
-			case BoolVar b -> {
-				lower[i] = 0;
-				upper[i] = 1;
-				integrality[i] = HighsLibrary.VAR_TYPE_INTEGER;
-			}
-			case IntVar iv -> {
-				lower[i] = iv.getLB();
-				upper[i] = iv.getUB();
-				integrality[i] = HighsLibrary.VAR_TYPE_INTEGER;
-			}
-			case RealVar rv -> {
-				lower[i] = bound(rv.getLB());
-				upper[i] = bound(rv.getUB());
-				integrality[i] = HighsLibrary.VAR_TYPE_CONTINUOUS;
-			}
-			default -> throw GamaRuntimeException.error("The HiGHS engine does not handle " + v.getVariableName()
+		final GamaVariable.Kind kind = v.getVariableKind();
+		if (kind == null || kind == GamaVariable.Kind.SET || kind == GamaVariable.Kind.EXPRESSION)
+			throw GamaRuntimeException.error("The HiGHS engine does not handle " + v.getVariableName()
 					+ ", which is a " + v.getKind() + " variable", scope);
-		}
+		lower[i] = bound(v.getLowerBound());
+		upper[i] = bound(v.getUpperBound());
+		integrality[i] = kind == GamaVariable.Kind.REAL ? HighsLibrary.VAR_TYPE_CONTINUOUS
+				: HighsLibrary.VAR_TYPE_INTEGER;
 	}
 
 	/**

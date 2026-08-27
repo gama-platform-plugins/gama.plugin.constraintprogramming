@@ -244,6 +244,22 @@ public class GamaProblem implements IValue {
 	}
 
 	/**
+	 * Registers a variable described independently of any engine.
+	 *
+	 * @param v
+	 *            the variable
+	 * @return the same variable, for chaining
+	 */
+	public GamaVariable register(final GamaVariable v) {
+		declared.put(v.getVariableName(), v);
+		// A constraint engine searches over the variables its model holds, so every declared variable has to reach it,
+		// including one no constraint ever mentions: it still takes a value in a solution. A linear engine reads the
+		// descriptions instead and needs nothing built here.
+		if (!isLinear()) { v.getVariable(); }
+		return v;
+	}
+
+	/**
 	 * Returns the variables declared in this problem, in declaration order, as a plain collection. Used by the engines,
 	 * which have no reason to pay for a GAML list on every solve.
 	 *
