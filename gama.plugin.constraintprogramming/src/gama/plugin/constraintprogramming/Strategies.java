@@ -35,7 +35,7 @@ public class Strategies {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Creates a problem solved by the engine named as second operand. Accepted names: 'choco', the constraint engine, which handles everything the plugin exposes; 'choco_lcg', the same with lazy clause generation, where the solver derives a clause from each conflict and keeps it; and 'lp', the linear engine, which only accepts linear constraints but settles a linear model in one go where a constraint engine would search.",
+			value = "Creates a problem solved by the engine named as second operand. Accepted names: 'choco', the constraint engine, which handles everything the plugin exposes; 'choco_lcg', the same with lazy clause generation, where the solver derives a clause from each conflict and keeps it; 'lp', the linear engine bundled with Choco, which only accepts linear constraints but settles a linear model in one go where a constraint engine would search; and 'highs', the native HiGHS engine, which accepts the same models as 'lp' and is the one to use for them.",
 			comment = "The engine is decided at creation, since variables and constraints are built differently. Nothing else in a model changes: the same declarations, the same expressions and the same way of reading a solution work on every engine, and an engine that cannot represent a constraint says so when it is posted.",
 			examples = { @example (
 					value = "problem p <- problem(\"my_problem\", \"lp\");",
