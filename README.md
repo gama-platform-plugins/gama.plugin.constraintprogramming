@@ -99,7 +99,9 @@ solution best <- maximize(p, on_time);
 
 Declaring a variable does not build anything engine-specific. `int_var`, `bool_var` and `real_var` record a name, a kind and a domain; the Choco variable is derived from that description, and only on a constraint engine, where every declared variable is materialised at declaration so that one no constraint mentions still takes a value in a solution. Set variables are the exception, since a set domain is not described by two bounds: they are built for Choco directly, and the linear engines report them as unsupported.
 
-Building a constraint does not build anything engine-specific either. The operators produce a relation over the backend-neutral term representation, and the Choco form is derived from it only when the problem runs on a constraint engine. A linear problem reads the relations directly, so declaring a constraint on `highs` or `lp` creates no propagator and no auxiliary Choco variable, which used to cost one such variable per linear row. Constraints that only a constraint engine can express, such as `circuit` or `all_different`, carry no relation at all and are reported as unsupported when posted to a linear problem.
+Building a constraint does not build anything engine-specific either. The operators produce the relations the constraint asserts, over the backend-neutral term representation, and the Choco form is derived from them only when the problem runs on a constraint engine. A linear problem reads the relations directly, so declaring a constraint on `highs` or `lp` creates no propagator and no auxiliary Choco variable, which used to cost one such variable per linear row. Constraints that only a constraint engine can express, such as `circuit` or `all_different`, carry no relation at all and are reported as unsupported when posted to a linear problem.
+
+A constraint asserts a *family* of relations rather than a single one, which is what lets a linear engine accept the globals that are linear underneath: `all_equal` is a chain of equalities, `increasing` and `decreasing` chains of inequalities, `knapsack` a pair of equalities, `and_all` the relations of its operands put together. Each of those restatements is a second way of writing the same constraint, so each is checked against the Choco one by enumerating a small domain and comparing the two accepted sets; a constraint engine still gets its dedicated propagator, which prunes more than the relations alone.
 
 ---
 
@@ -158,7 +160,7 @@ problem p <- problem("my_problem");
 
 ## Engines
 
-Everything in this reference works on every engine unless its documentation says otherwise. The operators that only the constraint engine can honour carry the sentence *Only available with the 'choco' engine*, and refuse the others at the point of use.
+Everything in this reference works on every engine unless its documentation says otherwise. The operators that only the constraint engine can honour carry the sentence *Only available with the 'choco' engine*, and refuse the others at the point of use. Those that read as a single statement but amount to linear relations say so instead, and work everywhere.
 
 | | `choco`, `choco_lcg` | `lp`, `highs` |
 |---|---|---|

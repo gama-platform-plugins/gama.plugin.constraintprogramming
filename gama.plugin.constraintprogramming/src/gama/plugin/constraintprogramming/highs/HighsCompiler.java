@@ -164,46 +164,50 @@ public class HighsCompiler {
 	private void rows(final IScope scope, final GamaProblem problem, final List<double[]> bounds,
 			final List<int[]> indices, final List<double[]> values) throws GamaRuntimeException {
 		for (final GamaConstraint c : problem.getPosted()) {
-			final Relation r = c.getRelation();
-			if (r == null) throw GamaRuntimeException.error("The constraint " + c.getConstraintName()
+			if (c.getRelations().isEmpty()) throw GamaRuntimeException.error("The constraint "
+					+ c.getConstraintName()
 					+ " is a global constraint, which the HiGHS engine does not handle. Use the 'choco' engine.",
 					scope);
-			final LinearForm form;
-			try {
-				form = LinearForm.of(r.left()).subtract(LinearForm.of(r.right()));
-			} catch (final NonLinearException e) {
-				throw GamaRuntimeException.error("The constraint " + r.describe()
-						+ " cannot be handled by the HiGHS engine: " + e.getMessage()
-						+ ". Use the 'choco' engine for this problem.", scope);
+			for (final Relation r : c.getRelations()) {
+				final LinearForm form;
+				try {
+					form = LinearForm.of(r.left()).subtract(LinearForm.of(r.right()));
+				} catch (final NonLinearException e) {
+					throw GamaRuntimeException.error("The constraint " + r.describe()
+							+ " cannot be handled by the HiGHS engine: " + e.getMessage()
+							+ ". Use the 'choco' engine for this problem.", scope);
+				}
+				final double rhs = -form.getConstant();
+				final int size = form.getCoefficients().size();
+				
+				if (size == 0) { continue; }
+				
+				final int[] rowIndex = new int[size];
+				final double[] rowValue = new double[size];
+				int k = 0;
+				for (final Map.Entry<GamaVariable, Double> e : form.getCoefficients().entrySet()) {
+					final Integer i = index.get(e.getKey());
+					if (i == null) throw GamaRuntimeException.error(
+							"The variable " + e.getKey().getVariableName() + " is not declared in this problem", scope);
+					rowIndex[k] = i;
+					rowValue[k] = e.getValue();
+					k++;
+				}
+				final double[] pair = switch (r.op()) {
+					case LE -> new double[] { -INFINITY, rhs };
+					case GE -> new double[] { rhs, INFINITY };
+					case EQ -> new double[] { rhs, rhs };
+					// Over integers a strict comparison is the non-strict one shifted by one
+					case LT -> new double[] { -INFINITY, rhs - 1 };
+					case GT -> new double[] { rhs + 1, INFINITY };
+					case NE -> throw GamaRuntimeException.error("The constraint " + r.describe()
+							+ " uses '!=', which a linear engine cannot express in a single row. Use the 'choco' engine.",
+							scope);
+				};
+				bounds.add(pair);
+				indices.add(rowIndex);
+				values.add(rowValue);
 			}
-			final double rhs = -form.getConstant();
-			final int size = form.getCoefficients().size();
-			if (size == 0) { continue; }
-			final int[] rowIndex = new int[size];
-			final double[] rowValue = new double[size];
-			int k = 0;
-			for (final Map.Entry<GamaVariable, Double> e : form.getCoefficients().entrySet()) {
-				final Integer i = index.get(e.getKey());
-				if (i == null) throw GamaRuntimeException.error(
-						"The variable " + e.getKey().getVariableName() + " is not declared in this problem", scope);
-				rowIndex[k] = i;
-				rowValue[k] = e.getValue();
-				k++;
-			}
-			final double[] pair = switch (r.op()) {
-				case LE -> new double[] { -INFINITY, rhs };
-				case GE -> new double[] { rhs, INFINITY };
-				case EQ -> new double[] { rhs, rhs };
-				// Over integers a strict comparison is the non-strict one shifted by one
-				case LT -> new double[] { -INFINITY, rhs - 1 };
-				case GT -> new double[] { rhs + 1, INFINITY };
-				case NE -> throw GamaRuntimeException.error("The constraint " + r.describe()
-						+ " uses '!=', which a linear engine cannot express in a single row. Use the 'choco' engine.",
-						scope);
-			};
-			bounds.add(pair);
-			indices.add(rowIndex);
-			values.add(rowValue);
 		}
 	}
 

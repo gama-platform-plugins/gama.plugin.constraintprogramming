@@ -135,38 +135,41 @@ public class LinearCompiler {
 	 */
 	private void constrain(final IScope scope, final GamaProblem problem) throws GamaRuntimeException {
 		for (final GamaConstraint c : problem.getPosted()) {
-			final Relation r = c.getRelation();
-			if (r == null) throw GamaRuntimeException.error("The constraint " + c.getConstraintName()
-					+ " cannot be handled by the linear engine", scope);
-			final LinearForm form;
-			try {
-				form = LinearForm.of(r.left()).subtract(LinearForm.of(r.right()));
-			} catch (final NonLinearException e) {
-				throw GamaRuntimeException.error("The constraint " + r.describe()
-						+ " cannot be handled by the linear engine: " + e.getMessage()
-						+ ". Use the 'choco' engine for this problem.", scope);
-			}
-			final HashMap<Integer, Double> row = new HashMap<>();
-			double bound = -form.getConstant();
-			for (final Map.Entry<GamaVariable, Double> e : form.getCoefficients().entrySet()) {
-				final Integer i = index.get(e.getKey());
-				if (i == null) throw GamaRuntimeException.error(
-						"The variable " + e.getKey().getVariableName() + " is not declared in this problem", scope);
-				row.merge(i, e.getValue(), Double::sum);
-				// x = y + lb, so the shift moves to the right hand side
-				bound -= e.getValue() * shift.get(e.getKey());
-			}
-			if (row.isEmpty()) { continue; }
-			switch (r.op()) {
-				case LE -> program.addLeq(row, bound);
-				case GE -> program.addGeq(row, bound);
-				case EQ -> program.addEq(row, bound);
-				// Strict comparisons over integers are the non-strict ones shifted by one
-				case LT -> program.addLeq(row, bound - 1);
-				case GT -> program.addGeq(row, bound + 1);
-				case NE -> throw GamaRuntimeException.error("The constraint " + r.describe()
-						+ " uses '!=', which a linear engine cannot express directly. Use the 'choco' engine, or "
-						+ "model the disequality with a boolean variable.", scope);
+			if (c.getRelations().isEmpty()) throw GamaRuntimeException.error("The constraint "
+					+ c.getConstraintName() + " cannot be handled by the linear engine", scope);
+			for (final Relation r : c.getRelations()) {
+				final LinearForm form;
+				try {
+					form = LinearForm.of(r.left()).subtract(LinearForm.of(r.right()));
+				} catch (final NonLinearException e) {
+					throw GamaRuntimeException.error("The constraint " + r.describe()
+							+ " cannot be handled by the linear engine: " + e.getMessage()
+							+ ". Use the 'choco' engine for this problem.", scope);
+				}
+				final HashMap<Integer, Double> row = new HashMap<>();
+				double bound = -form.getConstant();
+				for (final Map.Entry<GamaVariable, Double> e : form.getCoefficients().entrySet()) {
+					final Integer i = index.get(e.getKey());
+					if (i == null) throw GamaRuntimeException.error(
+							"The variable " + e.getKey().getVariableName() + " is not declared in this problem", scope);
+					row.merge(i, e.getValue(), Double::sum);
+					// x = y + lb, so the shift moves to the right hand side
+					bound -= e.getValue() * shift.get(e.getKey());
+				}
+				
+				if (row.isEmpty()) { continue; }
+				
+				switch (r.op()) {
+					case LE -> program.addLeq(row, bound);
+					case GE -> program.addGeq(row, bound);
+					case EQ -> program.addEq(row, bound);
+					// Strict comparisons over integers are the non-strict ones shifted by one
+					case LT -> program.addLeq(row, bound - 1);
+					case GT -> program.addGeq(row, bound + 1);
+					case NE -> throw GamaRuntimeException.error("The constraint " + r.describe()
+							+ " uses '!=', which a linear engine cannot express directly. Use the 'choco' engine, or "
+							+ "model the disequality with a boolean variable.", scope);
+				}
 			}
 		}
 	}

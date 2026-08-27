@@ -1,5 +1,7 @@
 package gama.plugin.constraintprogramming;
 
+import gama.plugin.constraintprogramming.terms.Term;
+import gama.plugin.constraintprogramming.terms.Relation;
 import java.util.function.Supplier;
 import org.chocosolver.solver.variables.Variable;
 
@@ -67,9 +69,16 @@ public class Reals {
 		if (c.length != vars.size()) throw GamaRuntimeException.error(
 				"real_scalar expects as many coefficients (" + c.length + ") as variables (" + vars.size() + ")",
 				scope);
-		final Variable[] operands = new Variable[vars.size()];
-		for (int i = 0; i < operands.length; i++) { operands[i] = vars.get(i).getVariable(); }
-		return new GamaConstraint(p, () -> p.getModel().scalar(operands, c, op, value));
+		final java.util.List<Term> products = new java.util.ArrayList<>(c.length);
+		for (int i = 0; i < c.length; i++) {
+			products.add(new Term.Binary(Term.Bin.MUL, new Term.Const(c[i]), new Term.Var(vars.get(i))));
+		}
+		return new GamaConstraint(p, () -> {
+			// materialised here rather than above, so that a linear engine never builds a Choco variable
+			final Variable[] operands = new Variable[vars.size()];
+			for (int i = 0; i < operands.length; i++) { operands[i] = vars.get(i).getVariable(); }
+			return p.getModel().scalar(operands, c, op, value);
+		}, new Relation(Constraints.relationOf(scope, op), Term.sum(products), new Term.Const(value)));
 	}
 
 	/**

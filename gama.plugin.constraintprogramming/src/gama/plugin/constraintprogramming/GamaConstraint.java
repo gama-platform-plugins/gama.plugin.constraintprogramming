@@ -1,5 +1,6 @@
 package gama.plugin.constraintprogramming;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.chocosolver.solver.constraints.Constraint;
@@ -56,8 +57,16 @@ public class GamaConstraint implements IValue {
 	/** Whether the constraint has been posted. */
 	private boolean posted;
 
-	/** The relation this constraint was compiled from, null when it comes from a global constraint. */
-	private final Relation relation;
+	/**
+	 * The relations this constraint asserts, empty when nothing but a constraint engine can express it.
+	 *
+	 * <p>
+	 * Several rather than one, because a constraint that reads as a single statement in GAML often amounts to a family
+	 * of them: {@code all_equal} is a chain of equalities, {@code increasing} a chain of inequalities, {@code knapsack}
+	 * a pair of them. Holding the family is what lets an engine that only knows linear relations accept those.
+	 * </p>
+	 */
+	private final List<Relation> relations;
 
 	/**
 	 * Instantiates a new constraint wrapper.
@@ -68,7 +77,7 @@ public class GamaConstraint implements IValue {
 	 *            builds the Choco constraint when one is needed
 	 */
 	public GamaConstraint(final GamaProblem problem, final Supplier<Constraint> builder) {
-		this(problem, builder, null);
+		this(problem, builder, List.of());
 	}
 
 	/**
@@ -83,9 +92,24 @@ public class GamaConstraint implements IValue {
 	 *            the relation it came from, or null
 	 */
 	public GamaConstraint(final GamaProblem problem, final Supplier<Constraint> builder, final Relation relation) {
+		this(problem, builder, relation == null ? List.of() : List.of(relation));
+	}
+
+	/**
+	 * Instantiates a new constraint wrapper over a family of relations.
+	 *
+	 * @param problem
+	 *            the problem over whose variables the constraint is expressed
+	 * @param builder
+	 *            builds the Choco constraint when one is needed
+	 * @param relations
+	 *            the relations it asserts, empty when it cannot be restated
+	 */
+	public GamaConstraint(final GamaProblem problem, final Supplier<Constraint> builder,
+			final List<Relation> relations) {
 		this.problem = problem;
 		this.builder = builder;
-		this.relation = relation;
+		this.relations = relations == null ? List.of() : List.copyOf(relations);
 	}
 
 	/**
@@ -100,7 +124,7 @@ public class GamaConstraint implements IValue {
 	public GamaConstraint(final GamaProblem problem, final Relation relation) {
 		this.problem = problem;
 		this.builder = null;
-		this.relation = relation;
+		this.relations = relation == null ? List.of() : List.of(relation);
 	}
 
 	/**
@@ -108,7 +132,14 @@ public class GamaConstraint implements IValue {
 	 *
 	 * @return the relation, or null if the constraint does not come from an arithmetic expression
 	 */
-	public Relation getRelation() { return relation; }
+	public Relation getRelation() { return relations.isEmpty() ? null : relations.get(0); }
+
+	/**
+	 * Gets every relation this constraint asserts.
+	 *
+	 * @return the relations, empty when only a constraint engine can express it
+	 */
+	public List<Relation> getRelations() { return relations; }
 
 	/**
 	 * Gets the problem this constraint refers to.
@@ -135,8 +166,8 @@ public class GamaConstraint implements IValue {
 		if (constraint == null) {
 			if (builder != null) {
 				constraint = builder.get();
-			} else if (relation != null) {
-				constraint = ChocoCompiler.compile(scope, problem, relation).decompose();
+			} else if (!relations.isEmpty()) {
+				constraint = ChocoCompiler.compile(scope, problem, relations.get(0)).decompose();
 			} else throw GamaRuntimeException.error("This constraint has neither a compiled form nor a relation", scope);
 		}
 		return constraint;
@@ -156,7 +187,7 @@ public class GamaConstraint implements IValue {
 		if (problem.isLinear()) {
 			// A linear engine reads the relations at solve time; there is nothing to hand to Choco, and compiling the
 			// relation for it would build propagators no one would ever run.
-			if (relation == null) throw GamaRuntimeException.error("The constraint " + getConstraintName()
+			if (relations.isEmpty()) throw GamaRuntimeException.error("The constraint " + getConstraintName()
 					+ " is a global constraint, which the '" + problem.getBackend().getLabel()
 					+ "' engine does not handle. Use the 'choco' engine, or express it with linear constraints.", scope);
 			posted = true;
@@ -178,7 +209,9 @@ public class GamaConstraint implements IValue {
 	@getter ("name")
 	public String getConstraintName() {
 		if (constraint != null) return constraint.getName();
-		return relation == null ? "constraint" : relation.describe();
+		if (relations.isEmpty()) return "constraint";
+		return relations.size() == 1 ? relations.get(0).describe()
+				: relations.get(0).describe() + " and " + (relations.size() - 1) + " more";
 	}
 
 	@getter ("posted")
@@ -190,7 +223,7 @@ public class GamaConstraint implements IValue {
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
 		if (constraint != null) return constraint.toString();
-		return relation.describe();
+		return getConstraintName();
 	}
 
 	@Override

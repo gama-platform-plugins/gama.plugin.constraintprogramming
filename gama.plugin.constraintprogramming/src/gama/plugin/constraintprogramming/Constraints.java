@@ -1,5 +1,7 @@
 package gama.plugin.constraintprogramming;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.constraints.Constraint;
@@ -123,6 +125,51 @@ public class Constraints {
 	}
 
 	/**
+	 * Builds the GAML constraint, keeping the relations it amounts to so that every engine can take it.
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param vars
+	 *            the variables it is expressed over
+	 * @param c
+	 *            builds the Choco constraint when one is needed
+	 * @param relations
+	 *            the relations it asserts
+	 * @return the GAML constraint
+	 */
+	private static GamaConstraint of(final IScope scope, final IList<GamaVariable> vars, final Supplier<Constraint> c,
+			final List<Relation> relations) {
+		return new GamaConstraint(CPUtils.problemOf(scope, vars), c, relations);
+	}
+
+	/**
+	 * The relations that spell out a comparison between each variable and the next.
+	 *
+	 * <p>
+	 * The offset follows the convention of the Choco constraints these restate, verified by enumeration:
+	 * {@code increasing(v, d)} holds when {@code v[i] + d <= v[i+1]}, and {@code decreasing(v, d)} when
+	 * {@code v[i] >= v[i+1] + d}.
+	 * </p>
+	 *
+	 * @param vars
+	 *            the variables, in order
+	 * @param op
+	 *            the comparison between one and the next
+	 * @param delta
+	 *            the offset added to the right hand side
+	 * @return one relation per consecutive pair
+	 */
+	private static List<Relation> chain(final IList<GamaVariable> vars, final Relation.Rel op, final int delta) {
+		final List<Relation> out = new ArrayList<>(Math.max(0, vars.size() - 1));
+		for (int i = 0; i + 1 < vars.size(); i++) {
+			final Term right = delta == 0 ? new Term.Var(vars.get(i + 1))
+					: new Term.Binary(Term.Bin.ADD, new Term.Var(vars.get(i + 1)), new Term.Const(delta));
+			out.add(new Relation(op, new Term.Var(vars.get(i)), right));
+		}
+		return out;
+	}
+
+	/**
 	 * Translates the comparison written as a string by arithm and scalar into a neutral one.
 	 *
 	 * @param scope
@@ -131,7 +178,7 @@ public class Constraints {
 	 *            the operator, as written in the model
 	 * @return the comparison
 	 */
-	private static Relation.Rel relationOf(final IScope scope, final String op) throws GamaRuntimeException {
+	static Relation.Rel relationOf(final IScope scope, final String op) throws GamaRuntimeException {
 		for (final Relation.Rel r : Relation.Rel.values()) { if (r.getSymbol().equals(op)) return r; }
 		throw GamaRuntimeException.error("Unknown comparison '" + op + "'. Expected one of: = != < <= > >=", scope);
 	}
@@ -361,12 +408,13 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that all the variables of the list take the same value. Only available with the 'choco' engine.",
+			value = "Builds the constraint stating that all the variables of the list take the same value. Available on every engine: it amounts to a chain of equalities.",
 			see = { "not_all_equal", "all_different" })
 	@no_test
 	public static GamaConstraint allEqual(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, () -> p.getModel().allEqual(CPUtils.intVars(scope, vars)));
+		return of(scope, vars, () -> p.getModel().allEqual(CPUtils.intVars(scope, vars)),
+				chain(vars, Relation.Rel.EQ, 0));
 	}
 
 	/**
@@ -512,13 +560,14 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that each variable of the list is greater than or equal to the previous one, plus the delta given as second operand. A delta of 1 makes the sequence strictly increasing. Only available with the 'choco' engine.",
+			value = "Builds the constraint stating that each variable of the list is greater than or equal to the previous one, plus the delta given as second operand. A delta of 1 makes the sequence strictly increasing. Available on every engine: it amounts to a chain of inequalities.",
 			see = { "decreasing", "sorted" })
 	@no_test
 	public static GamaConstraint increasing(final IScope scope, final IList<GamaVariable> vars, final int delta)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, () -> p.getModel().increasing(CPUtils.intVars(scope, vars), delta));
+		return of(scope, vars, () -> p.getModel().increasing(CPUtils.intVars(scope, vars), delta),
+				chain(vars, Relation.Rel.LE, -delta));
 	}
 
 	/**
@@ -529,13 +578,14 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that each variable of the list is smaller than or equal to the previous one, minus the delta given as second operand. Only available with the 'choco' engine.",
+			value = "Builds the constraint stating that each variable of the list is smaller than or equal to the previous one, minus the delta given as second operand. Available on every engine: it amounts to a chain of inequalities.",
 			see = { "increasing" })
 	@no_test
 	public static GamaConstraint decreasing(final IScope scope, final IList<GamaVariable> vars, final int delta)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, () -> p.getModel().decreasing(CPUtils.intVars(scope, vars), delta));
+		return of(scope, vars, () -> p.getModel().decreasing(CPUtils.intVars(scope, vars), delta),
+				chain(vars, Relation.Rel.GE, delta));
 	}
 
 	/**
@@ -714,16 +764,23 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint linking the number of occurrences of each item, the total weight and the total energy, given the weight and the energy of each item. Only available with the 'choco' engine.",
+			value = "Builds the constraint linking the number of occurrences of each item, the total weight and the total energy, given the weight and the energy of each item. Available on every engine: it amounts to two linear equalities. A constraint engine also gets the dedicated propagator, which prunes more than the two equalities alone.",
 			see = { "bin_packing", "scalar" })
 	@no_test
 	public static GamaConstraint knapsack(final IScope scope, final IList<GamaVariable> occurrences,
 			final GamaVariable weightSum, final GamaVariable energySum, final IList<Integer> weights,
 			final IList<Integer> energies) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, occurrences);
+		final int[] w = CPUtils.ints(scope, weights);
+		final int[] e = CPUtils.ints(scope, energies);
+		if (w.length != occurrences.size() || e.length != occurrences.size())
+			throw GamaRuntimeException.error("knapsack expects as many weights (" + w.length + ") and energies ("
+					+ e.length + ") as variables (" + occurrences.size() + ")", scope);
 		return of(scope, occurrences,
 				() -> p.getModel().knapsack(CPUtils.intVars(scope, occurrences), weightSum.asIntVar(scope),
-						energySum.asIntVar(scope), CPUtils.ints(scope, weights), CPUtils.ints(scope, energies)));
+						energySum.asIntVar(scope), w, e),
+				List.of(new Relation(Relation.Rel.EQ, weightedSum(occurrences, w), new Term.Var(weightSum)),
+						new Relation(Relation.Rel.EQ, weightedSum(occurrences, e), new Term.Var(energySum))));
 	}
 
 	/**
@@ -791,13 +848,21 @@ public class Constraints {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Builds the constraint stating that all the constraints of the list hold. Only available with the 'choco' engine.",
+			value = "Builds the constraint stating that all the constraints of the list hold. Available on every engine when every constraint of the list is itself, since the conjunction is then simply their relations put together; otherwise it needs the 'choco' engine.",
 			see = { "or_all", "opposite", "if_then" })
 	@no_test
 	public static GamaConstraint andAll(final IScope scope, final IList<GamaConstraint> constraints)
 			throws GamaRuntimeException {
 		final GamaProblem p = problemOfConstraints(scope, constraints);
-		return new GamaConstraint(p, () -> p.getModel().and(chocoConstraints(scope, constraints)));
+		final List<Relation> all = new ArrayList<>();
+		for (final GamaConstraint c : constraints) {
+			if (c == null || c.getRelations().isEmpty()) {
+				all.clear();
+				break;
+			}
+			all.addAll(c.getRelations());
+		}
+		return new GamaConstraint(p, () -> p.getModel().and(chocoConstraints(scope, constraints)), all);
 	}
 
 	/**
@@ -914,7 +979,8 @@ public class Constraints {
 		for (int i = 0; i < result.length; i++) {
 			final GamaConstraint c = constraints.get(i);
 			if (c == null) throw GamaRuntimeException.error("nil found at index " + i + " of a list of constraints", scope);
-			result[i] = c.getConstraint();
+			// getChocoConstraint, not getConstraint: the Choco form is built on demand and the field is empty until then
+			result[i] = c.getChocoConstraint(scope);
 		}
 		return result;
 	}

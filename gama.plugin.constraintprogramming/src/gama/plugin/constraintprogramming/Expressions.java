@@ -1,6 +1,5 @@
 package gama.plugin.constraintprogramming;
 
-import java.util.function.Supplier;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -298,8 +297,10 @@ public class Expressions {
 		if (a.isReal() != b.isReal()) {
 			final GamaVariable real = a.isReal() ? a : b;
 			final GamaVariable integer = a.isReal() ? b : a;
+			// The channelling is an equality like any other as far as a linear engine is concerned
 			return new GamaConstraint(real.getProblem(),
-					() -> real.getProblem().getModel().eq(real.asRealVar(scope), integer.asIntVar(scope)));
+					() -> real.getProblem().getModel().eq(real.asRealVar(scope), integer.asIntVar(scope)),
+					new Relation(Relation.Rel.EQ, new Term.Var(real), new Term.Var(integer)));
 		}
 		return rel(scope, Relation.Rel.EQ, a, b);
 	}
