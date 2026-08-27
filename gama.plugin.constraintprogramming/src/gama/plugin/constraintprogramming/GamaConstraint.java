@@ -1,5 +1,7 @@
 package gama.plugin.constraintprogramming;
 
+import java.util.function.Supplier;
+
 import org.chocosolver.solver.constraints.Constraint;
 
 import gama.annotations.doc;
@@ -37,8 +39,19 @@ public class GamaConstraint implements IValue {
 	/** The problem this constraint refers to. */
 	private final GamaProblem problem;
 
-	/** The underlying Choco constraint, built on demand when the constraint comes from a relation. */
+	/** The underlying Choco constraint, built on demand and never before. */
 	private Constraint constraint;
+
+	/**
+	 * Builds the Choco form when one is asked for, null when the constraint is carried by its relation alone.
+	 *
+	 * <p>
+	 * Held as a supplier rather than as a built constraint so that nothing Choco exists until an engine that speaks
+	 * Choco asks for it. A linear engine reads the relation and never calls this, so declaring a constraint on a linear
+	 * problem no longer creates the propagators, nor the auxiliary variables, of a model that will not be searched.
+	 * </p>
+	 */
+	private Supplier<Constraint> builder;
 
 	/** Whether the constraint has been posted. */
 	private boolean posted;
@@ -51,11 +64,11 @@ public class GamaConstraint implements IValue {
 	 *
 	 * @param problem
 	 *            the problem over whose variables the constraint is expressed
-	 * @param constraint
-	 *            the Choco constraint
+	 * @param builder
+	 *            builds the Choco constraint when one is needed
 	 */
-	public GamaConstraint(final GamaProblem problem, final Constraint constraint) {
-		this(problem, constraint, null);
+	public GamaConstraint(final GamaProblem problem, final Supplier<Constraint> builder) {
+		this(problem, builder, null);
 	}
 
 	/**
@@ -64,14 +77,14 @@ public class GamaConstraint implements IValue {
 	 *
 	 * @param problem
 	 *            the problem over whose variables the constraint is expressed
-	 * @param constraint
-	 *            the Choco constraint
+	 * @param builder
+	 *            builds the Choco constraint when one is needed
 	 * @param relation
 	 *            the relation it came from, or null
 	 */
-	public GamaConstraint(final GamaProblem problem, final Constraint constraint, final Relation relation) {
+	public GamaConstraint(final GamaProblem problem, final Supplier<Constraint> builder, final Relation relation) {
 		this.problem = problem;
-		this.constraint = constraint;
+		this.builder = builder;
 		this.relation = relation;
 	}
 
@@ -86,7 +99,7 @@ public class GamaConstraint implements IValue {
 	 */
 	public GamaConstraint(final GamaProblem problem, final Relation relation) {
 		this.problem = problem;
-		this.constraint = null;
+		this.builder = null;
 		this.relation = relation;
 	}
 
@@ -105,9 +118,9 @@ public class GamaConstraint implements IValue {
 	public GamaProblem getProblem() { return problem; }
 
 	/**
-	 * Gets the underlying Choco constraint.
+	 * Gets the underlying Choco constraint, if one has been built.
 	 *
-	 * @return the constraint
+	 * @return the constraint, or null while none has been asked for
 	 */
 	public Constraint getConstraint() { return constraint; }
 
@@ -120,9 +133,11 @@ public class GamaConstraint implements IValue {
 	 */
 	public Constraint getChocoConstraint(final IScope scope) throws GamaRuntimeException {
 		if (constraint == null) {
-			if (relation == null)
-				throw GamaRuntimeException.error("This constraint has neither a compiled form nor a relation", scope);
-			constraint = ChocoCompiler.compile(scope, problem, relation).decompose();
+			if (builder != null) {
+				constraint = builder.get();
+			} else if (relation != null) {
+				constraint = ChocoCompiler.compile(scope, problem, relation).decompose();
+			} else throw GamaRuntimeException.error("This constraint has neither a compiled form nor a relation", scope);
 		}
 		return constraint;
 	}

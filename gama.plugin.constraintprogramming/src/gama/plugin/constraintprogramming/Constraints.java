@@ -1,5 +1,6 @@
 package gama.plugin.constraintprogramming;
 
+import java.util.function.Supplier;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.constraints.extension.Tuples;
@@ -113,10 +114,11 @@ public class Constraints {
 	 * @param vars
 	 *            the variables the constraint was built from, used to retrieve the problem
 	 * @param c
-	 *            the Choco constraint
+	 *            builds the Choco constraint when one is needed
 	 * @return the GAML constraint
 	 */
-	private static GamaConstraint of(final IScope scope, final IList<GamaVariable> vars, final Constraint c) {
+	private static GamaConstraint of(final IScope scope, final IList<GamaVariable> vars,
+			final Supplier<Constraint> c) {
 		return new GamaConstraint(CPUtils.problemOf(scope, vars), c);
 	}
 
@@ -172,7 +174,7 @@ public class Constraints {
 	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op, final int value)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p, p.getModel().arithm(var.asIntVar(scope), op, value),
+		return new GamaConstraint(p, () -> p.getModel().arithm(var.asIntVar(scope), op, value),
 				new Relation(relationOf(scope, op), new Term.Var(var), new Term.Const(value)));
 	}
 
@@ -193,7 +195,7 @@ public class Constraints {
 	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op,
 			final GamaVariable other) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p, p.getModel().arithm(var.asIntVar(scope), op, other.asIntVar(scope)),
+		return new GamaConstraint(p, () -> p.getModel().arithm(var.asIntVar(scope), op, other.asIntVar(scope)),
 				new Relation(relationOf(scope, op), new Term.Var(var), new Term.Var(other)));
 	}
 
@@ -222,7 +224,7 @@ public class Constraints {
 			default -> throw GamaRuntimeException
 					.error("Unknown arithmetic operator '" + op1 + "'. Expected one of: + - * /", scope);
 		};
-		return new GamaConstraint(p, p.getModel().arithm(var.asIntVar(scope), op1, other.asIntVar(scope), op2, value),
+		return new GamaConstraint(p, () -> p.getModel().arithm(var.asIntVar(scope), op1, other.asIntVar(scope), op2, value),
 				new Relation(relationOf(scope, op2),
 						new Term.Binary(arithmetic, new Term.Var(var), new Term.Var(other)),
 						new Term.Const(value)));
@@ -248,7 +250,7 @@ public class Constraints {
 		final int[] c = CPUtils.ints(scope, coeffs);
 		if (c.length != vars.size()) throw GamaRuntimeException
 				.error("scalar expects as many coefficients (" + c.length + ") as variables (" + vars.size() + ")", scope);
-		return new GamaConstraint(p, p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value),
+		return new GamaConstraint(p, () -> p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value),
 				new Relation(relationOf(scope, op), weightedSum(vars, c), new Term.Const(value)));
 	}
 
@@ -269,7 +271,7 @@ public class Constraints {
 		final int[] c = CPUtils.ints(scope, coeffs);
 		if (c.length != vars.size()) throw GamaRuntimeException
 				.error("scalar expects as many coefficients (" + c.length + ") as variables (" + vars.size() + ")", scope);
-		return new GamaConstraint(p, p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value.asIntVar(scope)),
+		return new GamaConstraint(p, () -> p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value.asIntVar(scope)),
 				new Relation(relationOf(scope, op), weightedSum(vars, c), new Term.Var(value)));
 	}
 
@@ -290,7 +292,7 @@ public class Constraints {
 	public static GamaConstraint member(final IScope scope, final GamaVariable var, final IList<Integer> values)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p, p.getModel().member(var.asIntVar(scope), CPUtils.ints(scope, values)));
+		return new GamaConstraint(p, () -> p.getModel().member(var.asIntVar(scope), CPUtils.ints(scope, values)));
 	}
 
 	/**
@@ -307,7 +309,7 @@ public class Constraints {
 	public static GamaConstraint notMember(final IScope scope, final GamaVariable var, final IList<Integer> values)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p, p.getModel().notMember(var.asIntVar(scope), CPUtils.ints(scope, values)));
+		return new GamaConstraint(p, () -> p.getModel().notMember(var.asIntVar(scope), CPUtils.ints(scope, values)));
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------
@@ -331,7 +333,7 @@ public class Constraints {
 	public static GamaConstraint allDifferent(final IScope scope, final IList<GamaVariable> vars)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().allDifferent(CPUtils.intVars(scope, vars)));
+		return of(scope, vars, () -> p.getModel().allDifferent(CPUtils.intVars(scope, vars)));
 	}
 
 	/**
@@ -348,7 +350,7 @@ public class Constraints {
 	public static GamaConstraint allDifferentExcept0(final IScope scope, final IList<GamaVariable> vars)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().allDifferentExcept0(CPUtils.intVars(scope, vars)));
+		return of(scope, vars, () -> p.getModel().allDifferentExcept0(CPUtils.intVars(scope, vars)));
 	}
 
 	/**
@@ -364,7 +366,7 @@ public class Constraints {
 	@no_test
 	public static GamaConstraint allEqual(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().allEqual(CPUtils.intVars(scope, vars)));
+		return of(scope, vars, () -> p.getModel().allEqual(CPUtils.intVars(scope, vars)));
 	}
 
 	/**
@@ -381,7 +383,7 @@ public class Constraints {
 	public static GamaConstraint notAllEqual(final IScope scope, final IList<GamaVariable> vars)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().notAllEqual(CPUtils.intVars(scope, vars)));
+		return of(scope, vars, () -> p.getModel().notAllEqual(CPUtils.intVars(scope, vars)));
 	}
 
 	/**
@@ -401,7 +403,7 @@ public class Constraints {
 	public static GamaConstraint element(final IScope scope, final GamaVariable value, final IList<Integer> table,
 			final GamaVariable index) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, value);
-		return new GamaConstraint(p, p.getModel().element(value.asIntVar(scope), CPUtils.ints(scope, table),
+		return new GamaConstraint(p, () -> p.getModel().element(value.asIntVar(scope), CPUtils.ints(scope, table),
 				index.asIntVar(scope), 0));
 	}
 
@@ -421,7 +423,7 @@ public class Constraints {
 			final IList<Integer> values) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
 		return of(scope, vars,
-				p.getModel().among(nb.asIntVar(scope), CPUtils.intVars(scope, vars), CPUtils.ints(scope, values)));
+				() -> p.getModel().among(nb.asIntVar(scope), CPUtils.intVars(scope, vars), CPUtils.ints(scope, values)));
 	}
 
 	/**
@@ -438,7 +440,7 @@ public class Constraints {
 	public static GamaConstraint nValues(final IScope scope, final IList<GamaVariable> vars, final GamaVariable nb)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().nValues(CPUtils.intVars(scope, vars), nb.asIntVar(scope)));
+		return of(scope, vars, () -> p.getModel().nValues(CPUtils.intVars(scope, vars), nb.asIntVar(scope)));
 	}
 
 	/**
@@ -455,7 +457,7 @@ public class Constraints {
 	public static GamaConstraint atLeastNValues(final IScope scope, final IList<GamaVariable> vars, final GamaVariable nb)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().atLeastNValues(CPUtils.intVars(scope, vars), nb.asIntVar(scope), true));
+		return of(scope, vars, () -> p.getModel().atLeastNValues(CPUtils.intVars(scope, vars), nb.asIntVar(scope), true));
 	}
 
 	/**
@@ -472,7 +474,7 @@ public class Constraints {
 	public static GamaConstraint atMostNValues(final IScope scope, final IList<GamaVariable> vars, final GamaVariable nb)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().atMostNValues(CPUtils.intVars(scope, vars), nb.asIntVar(scope), true));
+		return of(scope, vars, () -> p.getModel().atMostNValues(CPUtils.intVars(scope, vars), nb.asIntVar(scope), true));
 	}
 
 	/**
@@ -498,7 +500,7 @@ public class Constraints {
 				"global_cardinality expects as many occurrence variables (" + occurrences.size() + ") as values ("
 						+ v.length + ")",
 				scope);
-		return of(scope, vars, p.getModel().globalCardinality(CPUtils.intVars(scope, vars), v,
+		return of(scope, vars, () -> p.getModel().globalCardinality(CPUtils.intVars(scope, vars), v,
 				CPUtils.intVars(scope, occurrences), closed));
 	}
 
@@ -516,7 +518,7 @@ public class Constraints {
 	public static GamaConstraint increasing(final IScope scope, final IList<GamaVariable> vars, final int delta)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().increasing(CPUtils.intVars(scope, vars), delta));
+		return of(scope, vars, () -> p.getModel().increasing(CPUtils.intVars(scope, vars), delta));
 	}
 
 	/**
@@ -533,7 +535,7 @@ public class Constraints {
 	public static GamaConstraint decreasing(final IScope scope, final IList<GamaVariable> vars, final int delta)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().decreasing(CPUtils.intVars(scope, vars), delta));
+		return of(scope, vars, () -> p.getModel().decreasing(CPUtils.intVars(scope, vars), delta));
 	}
 
 	/**
@@ -551,7 +553,7 @@ public class Constraints {
 	public static GamaConstraint sorted(final IScope scope, final IList<GamaVariable> vars,
 			final IList<GamaVariable> sortedVars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().sort(CPUtils.intVars(scope, vars), CPUtils.intVars(scope, sortedVars)));
+		return of(scope, vars, () -> p.getModel().sort(CPUtils.intVars(scope, vars), CPUtils.intVars(scope, sortedVars)));
 	}
 
 	/**
@@ -568,7 +570,7 @@ public class Constraints {
 	public static GamaConstraint lexLess(final IScope scope, final IList<GamaVariable> first,
 			final IList<GamaVariable> second) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, first);
-		return of(scope, first, p.getModel().lexLess(CPUtils.intVars(scope, first), CPUtils.intVars(scope, second)));
+		return of(scope, first, () -> p.getModel().lexLess(CPUtils.intVars(scope, first), CPUtils.intVars(scope, second)));
 	}
 
 	/**
@@ -585,7 +587,7 @@ public class Constraints {
 	public static GamaConstraint lexLessEq(final IScope scope, final IList<GamaVariable> first,
 			final IList<GamaVariable> second) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, first);
-		return of(scope, first, p.getModel().lexLessEq(CPUtils.intVars(scope, first), CPUtils.intVars(scope, second)));
+		return of(scope, first, () -> p.getModel().lexLessEq(CPUtils.intVars(scope, first), CPUtils.intVars(scope, second)));
 	}
 
 	/**
@@ -604,7 +606,7 @@ public class Constraints {
 			final IList<GamaVariable> second) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, first);
 		return of(scope, first,
-				p.getModel().inverseChanneling(CPUtils.intVars(scope, first), CPUtils.intVars(scope, second)));
+				() -> p.getModel().inverseChanneling(CPUtils.intVars(scope, first), CPUtils.intVars(scope, second)));
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------
@@ -624,7 +626,7 @@ public class Constraints {
 	@no_test
 	public static GamaConstraint circuit(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().circuit(CPUtils.intVars(scope, vars)));
+		return of(scope, vars, () -> p.getModel().circuit(CPUtils.intVars(scope, vars)));
 	}
 
 	/**
@@ -641,7 +643,7 @@ public class Constraints {
 	public static GamaConstraint subCircuit(final IScope scope, final IList<GamaVariable> vars, final GamaVariable size)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().subCircuit(CPUtils.intVars(scope, vars), 0, size.asIntVar(scope)));
+		return of(scope, vars, () -> p.getModel().subCircuit(CPUtils.intVars(scope, vars), 0, size.asIntVar(scope)));
 	}
 
 	/**
@@ -659,7 +661,7 @@ public class Constraints {
 			final GamaVariable end) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
 		return of(scope, vars,
-				p.getModel().path(CPUtils.intVars(scope, vars), start.asIntVar(scope), end.asIntVar(scope)));
+				() -> p.getModel().path(CPUtils.intVars(scope, vars), start.asIntVar(scope), end.asIntVar(scope)));
 	}
 
 	/**
@@ -676,7 +678,7 @@ public class Constraints {
 	public static GamaConstraint tree(final IScope scope, final IList<GamaVariable> vars, final GamaVariable nbRoots)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		return of(scope, vars, p.getModel().tree(CPUtils.intVars(scope, vars), nbRoots.asIntVar(scope)));
+		return of(scope, vars, () -> p.getModel().tree(CPUtils.intVars(scope, vars), nbRoots.asIntVar(scope)));
 	}
 
 	/**
@@ -700,7 +702,7 @@ public class Constraints {
 		final int[] sizes = CPUtils.ints(scope, itemSize);
 		if (sizes.length != itemBin.size()) throw GamaRuntimeException.error(
 				"bin_packing expects as many sizes (" + sizes.length + ") as items (" + itemBin.size() + ")", scope);
-		return of(scope, itemBin, p.getModel().binPacking(CPUtils.intVars(scope, itemBin), sizes,
+		return of(scope, itemBin, () -> p.getModel().binPacking(CPUtils.intVars(scope, itemBin), sizes,
 				CPUtils.intVars(scope, binLoad), offset));
 	}
 
@@ -720,7 +722,7 @@ public class Constraints {
 			final IList<Integer> energies) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, occurrences);
 		return of(scope, occurrences,
-				p.getModel().knapsack(CPUtils.intVars(scope, occurrences), weightSum.asIntVar(scope),
+				() -> p.getModel().knapsack(CPUtils.intVars(scope, occurrences), weightSum.asIntVar(scope),
 						energySum.asIntVar(scope), CPUtils.ints(scope, weights), CPUtils.ints(scope, energies)));
 	}
 
@@ -774,7 +776,7 @@ public class Constraints {
 			}
 			tuples.add(tuple);
 		}
-		return of(scope, vars, p.getModel().table(CPUtils.intVars(scope, vars), tuples));
+		return of(scope, vars, () -> p.getModel().table(CPUtils.intVars(scope, vars), tuples));
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------
@@ -795,7 +797,7 @@ public class Constraints {
 	public static GamaConstraint andAll(final IScope scope, final IList<GamaConstraint> constraints)
 			throws GamaRuntimeException {
 		final GamaProblem p = problemOfConstraints(scope, constraints);
-		return new GamaConstraint(p, p.getModel().and(chocoConstraints(scope, constraints)));
+		return new GamaConstraint(p, () -> p.getModel().and(chocoConstraints(scope, constraints)));
 	}
 
 	/**
@@ -812,7 +814,7 @@ public class Constraints {
 	public static GamaConstraint orAll(final IScope scope, final IList<GamaConstraint> constraints)
 			throws GamaRuntimeException {
 		final GamaProblem p = problemOfConstraints(scope, constraints);
-		return new GamaConstraint(p, p.getModel().or(chocoConstraints(scope, constraints)));
+		return new GamaConstraint(p, () -> p.getModel().or(chocoConstraints(scope, constraints)));
 	}
 
 	/**
@@ -831,7 +833,7 @@ public class Constraints {
 			throws GamaRuntimeException {
 		if (constraint == null) throw GamaRuntimeException.error("Cannot negate a nil constraint", scope);
 		final GamaProblem p = constraint.getProblem();
-		return new GamaConstraint(p, p.getModel().not(constraint.getConstraint()));
+		return new GamaConstraint(p, () -> p.getModel().not(constraint.getChocoConstraint(scope)));
 	}
 
 	/**
@@ -854,7 +856,8 @@ public class Constraints {
 			throw GamaRuntimeException.error("if_then does not accept a nil constraint", scope);
 		final GamaProblem p = condition.getProblem();
 		final Model m = p.getModel();
-		return new GamaConstraint(p, m.or(m.not(condition.getConstraint()), consequence.getConstraint()));
+		return new GamaConstraint(p,
+				() -> m.or(m.not(condition.getChocoConstraint(scope)), consequence.getChocoConstraint(scope)));
 	}
 
 	/**

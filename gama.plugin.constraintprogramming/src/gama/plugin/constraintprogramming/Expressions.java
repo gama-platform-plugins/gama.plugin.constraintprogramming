@@ -1,5 +1,6 @@
 package gama.plugin.constraintprogramming;
 
+import java.util.function.Supplier;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -298,7 +299,7 @@ public class Expressions {
 			final GamaVariable real = a.isReal() ? a : b;
 			final GamaVariable integer = a.isReal() ? b : a;
 			return new GamaConstraint(real.getProblem(),
-					real.getProblem().getModel().eq(real.asRealVar(scope), integer.asIntVar(scope)));
+					() -> real.getProblem().getModel().eq(real.asRealVar(scope), integer.asIntVar(scope)));
 		}
 		return rel(scope, Relation.Rel.EQ, a, b);
 	}
@@ -484,13 +485,14 @@ public class Expressions {
 		final Relation source = constraint.getRelation();
 		if (source == null) throw GamaRuntimeException.error("as_table only applies to a constraint built from an "
 				+ "arithmetic expression, and " + constraint.getConstraintName() + " is not one", scope);
-		try {
-			return new GamaConstraint(constraint.getProblem(),
-					ChocoCompiler.compile(scope, constraint.getProblem(), source).extension(), source);
-		} catch (final Exception e) {
-			throw GamaRuntimeException.error("Impossible to tabulate this constraint, most likely because the domains "
-					+ "of its variables are too large: " + e.getMessage(), scope);
-		}
+		return new GamaConstraint(constraint.getProblem(), () -> {
+			try {
+				return ChocoCompiler.compile(scope, constraint.getProblem(), source).extension();
+			} catch (final Exception e) {
+				throw GamaRuntimeException.error("Impossible to tabulate this constraint, most likely because the "
+						+ "domains of its variables are too large: " + e.getMessage(), scope);
+			}
+		}, source);
 	}
 
 }

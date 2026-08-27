@@ -1,5 +1,6 @@
 package gama.plugin.constraintprogramming;
 
+import java.util.function.Supplier;
 import org.chocosolver.solver.variables.Variable;
 
 import gama.annotations.doc;
@@ -68,7 +69,7 @@ public class Reals {
 				scope);
 		final Variable[] operands = new Variable[vars.size()];
 		for (int i = 0; i < operands.length; i++) { operands[i] = vars.get(i).getVariable(); }
-		return new GamaConstraint(p, p.getModel().scalar(operands, c, op, value));
+		return new GamaConstraint(p, () -> p.getModel().scalar(operands, c, op, value));
 	}
 
 	/**
@@ -87,7 +88,7 @@ public class Reals {
 			final GamaVariable index) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, value);
 		return new GamaConstraint(p,
-				p.getModel().element(value.asRealVar(scope), doubles(scope, table), index.asIntVar(scope)));
+				() -> p.getModel().element(value.asRealVar(scope), doubles(scope, table), index.asIntVar(scope)));
 	}
 
 	/**

@@ -97,6 +97,8 @@ solution best <- maximize(p, on_time);
 
 > **Careful:** a constraint that is built and never posted is silently ignored. `do all_different(q);` compiles, runs, and does nothing. The missing `post` is not reported.
 
+Building a constraint does not build anything engine-specific either. The operators produce a relation over the backend-neutral term representation, and the Choco form is derived from it only when the problem runs on a constraint engine. A linear problem reads the relations directly, so declaring a constraint on `highs` or `lp` creates no propagator and no auxiliary Choco variable, which used to cost one such variable per linear row. Constraints that only a constraint engine can express, such as `circuit` or `all_different`, carry no relation at all and are reported as unsupported when posted to a linear problem.
+
 ---
 
 ## Types
