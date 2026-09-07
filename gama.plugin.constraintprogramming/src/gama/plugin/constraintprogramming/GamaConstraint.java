@@ -166,8 +166,16 @@ public class GamaConstraint implements IValue {
 		if (constraint == null) {
 			if (builder != null) {
 				constraint = builder.get();
+			} else if (relations.size() == 1) {
+				constraint = ChocoCompiler.constraintOf(scope, problem, relations.get(0));
 			} else if (!relations.isEmpty()) {
-				constraint = ChocoCompiler.compile(scope, problem, relations.get(0)).decompose();
+				// A family of relations is a conjunction, and has to reach Choco as one constraint since callers such
+				// as opposite and or_all need something they can negate or reify as a whole
+				final Constraint[] all = new Constraint[relations.size()];
+				for (int i = 0; i < all.length; i++) {
+					all[i] = ChocoCompiler.constraintOf(scope, problem, relations.get(i));
+				}
+				constraint = problem.requireChoco(scope, "This constraint").getModel().and(all);
 			} else throw GamaRuntimeException.error("This constraint has neither a compiled form nor a relation", scope);
 		}
 		return constraint;

@@ -218,11 +218,10 @@ public class Constraints {
 					isExecutable = false) },
 			see = { "scalar", "member" })
 	@no_test
-	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op, final int value)
+	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op, final double value)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p, () -> p.getModel().arithm(var.asIntVar(scope), op, value),
-				new Relation(relationOf(scope, op), new Term.Var(var), new Term.Const(value)));
+		return new GamaConstraint(p, new Relation(relationOf(scope, op), new Term.Var(var), new Term.Const(value)));
 	}
 
 	/**
@@ -242,8 +241,7 @@ public class Constraints {
 	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op,
 			final GamaVariable other) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		return new GamaConstraint(p, () -> p.getModel().arithm(var.asIntVar(scope), op, other.asIntVar(scope)),
-				new Relation(relationOf(scope, op), new Term.Var(var), new Term.Var(other)));
+		return new GamaConstraint(p, new Relation(relationOf(scope, op), new Term.Var(var), new Term.Var(other)));
 	}
 
 	/**
@@ -261,7 +259,7 @@ public class Constraints {
 			see = { "arithm" })
 	@no_test
 	public static GamaConstraint arithm(final IScope scope, final GamaVariable var, final String op1,
-			final GamaVariable other, final String op2, final int value) throws GamaRuntimeException {
+			final GamaVariable other, final String op2, final double value) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
 		final Term.Bin arithmetic = switch (op1) {
 			case "+" -> Term.Bin.ADD;
@@ -271,10 +269,8 @@ public class Constraints {
 			default -> throw GamaRuntimeException
 					.error("Unknown arithmetic operator '" + op1 + "'. Expected one of: + - * /", scope);
 		};
-		return new GamaConstraint(p, () -> p.getModel().arithm(var.asIntVar(scope), op1, other.asIntVar(scope), op2, value),
-				new Relation(relationOf(scope, op2),
-						new Term.Binary(arithmetic, new Term.Var(var), new Term.Var(other)),
-						new Term.Const(value)));
+		return new GamaConstraint(p, new Relation(relationOf(scope, op2),
+				new Term.Binary(arithmetic, new Term.Var(var), new Term.Var(other)), new Term.Const(value)));
 	}
 
 	/**
@@ -292,13 +288,12 @@ public class Constraints {
 			see = { "sum_var", "arithm" })
 	@no_test
 	public static GamaConstraint scalar(final IScope scope, final IList<GamaVariable> vars, final IList<Integer> coeffs,
-			final String op, final int value) throws GamaRuntimeException {
+			final String op, final double value) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
 		final int[] c = CPUtils.ints(scope, coeffs);
 		if (c.length != vars.size()) throw GamaRuntimeException
 				.error("scalar expects as many coefficients (" + c.length + ") as variables (" + vars.size() + ")", scope);
-		return new GamaConstraint(p, () -> p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value),
-				new Relation(relationOf(scope, op), weightedSum(vars, c), new Term.Const(value)));
+		return new GamaConstraint(p, new Relation(relationOf(scope, op), weightedSum(vars, c), new Term.Const(value)));
 	}
 
 	/**
@@ -318,8 +313,7 @@ public class Constraints {
 		final int[] c = CPUtils.ints(scope, coeffs);
 		if (c.length != vars.size()) throw GamaRuntimeException
 				.error("scalar expects as many coefficients (" + c.length + ") as variables (" + vars.size() + ")", scope);
-		return new GamaConstraint(p, () -> p.getModel().scalar(CPUtils.intVars(scope, vars), c, op, value.asIntVar(scope)),
-				new Relation(relationOf(scope, op), weightedSum(vars, c), new Term.Var(value)));
+		return new GamaConstraint(p, new Relation(relationOf(scope, op), weightedSum(vars, c), new Term.Var(value)));
 	}
 
 	/**

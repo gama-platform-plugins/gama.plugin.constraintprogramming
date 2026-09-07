@@ -64,6 +64,46 @@ public class Reals {
 	@no_test
 	public static GamaConstraint realScalar(final IScope scope, final IList<GamaVariable> vars,
 			final IList<Double> coeffs, final String op, final double value) throws GamaRuntimeException {
+		return realScalar(scope, vars, coeffs, op, new Term.Const(value));
+	}
+
+	/**
+	 * A weighted sum over reals compared to a variable.
+	 */
+	@operator (
+			value = "real_scalar",
+			category = { CPUtils.CATEGORY },
+			concept = { IConcept.OPTIMIZATION })
+	@doc (
+			value = "Builds the constraint 'sum of the variables weighted by the real coefficients, operator variable'. The variables may be integer or real, in any mix, on either side.",
+			examples = { @example (
+					value = "do post(real_scalar(quantities, [1.5, 0.75, 2.0], \"=\", total_cost));",
+					isExecutable = false) },
+			see = { "real_scalar", "scalar" })
+	@no_test
+	public static GamaConstraint realScalar(final IScope scope, final IList<GamaVariable> vars,
+			final IList<Double> coeffs, final String op, final GamaVariable value) throws GamaRuntimeException {
+		if (value == null) throw GamaRuntimeException.error("real_scalar was given a nil variable to compare to", scope);
+		return realScalar(scope, vars, coeffs, op, new Term.Var(value));
+	}
+
+	/**
+	 * Builds the weighted sum and compares it to whatever the caller put on the right hand side.
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param vars
+	 *            the variables
+	 * @param coeffs
+	 *            their coefficients
+	 * @param op
+	 *            the comparison
+	 * @param right
+	 *            the right hand side, a constant or a variable
+	 * @return the constraint
+	 */
+	private static GamaConstraint realScalar(final IScope scope, final IList<GamaVariable> vars,
+			final IList<Double> coeffs, final String op, final Term right) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
 		final double[] c = doubles(scope, coeffs);
 		if (c.length != vars.size()) throw GamaRuntimeException.error(
@@ -73,12 +113,7 @@ public class Reals {
 		for (int i = 0; i < c.length; i++) {
 			products.add(new Term.Binary(Term.Bin.MUL, new Term.Const(c[i]), new Term.Var(vars.get(i))));
 		}
-		return new GamaConstraint(p, () -> {
-			// materialised here rather than above, so that a linear engine never builds a Choco variable
-			final Variable[] operands = new Variable[vars.size()];
-			for (int i = 0; i < operands.length; i++) { operands[i] = vars.get(i).getVariable(); }
-			return p.getModel().scalar(operands, c, op, value);
-		}, new Relation(Constraints.relationOf(scope, op), Term.sum(products), new Term.Const(value)));
+		return new GamaConstraint(p, new Relation(Constraints.relationOf(scope, op), Term.sum(products), right));
 	}
 
 	/**

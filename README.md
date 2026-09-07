@@ -105,6 +105,10 @@ Declaring a variable does not build anything engine-specific. `int_var`, `bool_v
 
 Building a constraint does not build anything engine-specific either. The operators produce the relations the constraint asserts, over the backend-neutral term representation, and the Choco form is derived from them only when the problem runs on a constraint engine. A linear problem reads the relations directly, so declaring a constraint on `highs` or `lp` creates no propagator and no auxiliary Choco variable, which used to cost one such variable per linear row. Constraints that only a constraint engine can express, such as `circuit` or `all_different`, carry no relation at all and are reported as unsupported when posted to a linear problem.
 
+An operator states what its constraint asserts and stops there: `arithm`, `scalar` and the comparison operators carry their relation and nothing else. Choosing how Choco should encode that is the engine's business, and `ChocoCompiler.constraintOf` is the one place it is decided. A relation that turns out to be linear is handed to `scalar`, or to `arithm` over a single variable; one that is not falls back on the expression tree Choco propagates natively. The difference is not cosmetic: a weighted sum over forty variables compiled as an expression tree costs 119 auxiliary variables and 80 propagators, where the dedicated constraint costs one of each, and the two now produce the same encoding.
+
+What keeps an explicit Choco form is what Choco genuinely does better than the relations describing it: `all_different`, `circuit`, `element`, `table`, `knapsack`, `all_equal`, `increasing` and the rest have dedicated propagators that prune more than the arithmetic they amount to. Those operators carry both, the relations for an engine that only knows arithmetic and the global for the one that can use it.
+
 A constraint asserts a *family* of relations rather than a single one, which is what lets a linear engine accept the globals that are linear underneath: `all_equal` is a chain of equalities, `increasing` and `decreasing` chains of inequalities, `knapsack` a pair of equalities, `and_all` the relations of its operands put together. Each of those restatements is a second way of writing the same constraint, so each is checked against the Choco one by enumerating a small domain and comparing the two accepted sets; a constraint engine still gets its dedicated propagator, which prunes more than the relations alone.
 
 ---
@@ -174,7 +178,8 @@ Everything in this reference works on every engine unless its documentation says
 | `arithm`, `scalar` | yes | yes |
 | global constraints (`all_different`, `circuit`, `table`, `knapsack`, …) | yes | no |
 | `member`, `not_member` | yes | no |
-| derived variables (`sum_var`, `min_var`, `element_var`, `abs_var`, …) | yes | no |
+| linear derived variables (`sum_var`, `neg_var`, `offset_var`, `scale_var`) | yes | yes |
+| other derived variables (`min_var`, `max_var`, `abs_var`, `element_var`, `mod_var`, …) | yes | no |
 | combinators and `reify` | yes | no |
 | `!=` in a posted constraint | yes | no |
 | `search`, `minimize`, `maximize`, `optimize` | yes | yes |
@@ -184,7 +189,7 @@ Everything in this reference works on every engine unless its documentation says
 | `nodes`, `search_time`, `solutions` | reported | reported, except `nodes` on `lp` |
 | `fails` | reported | 0, propagation has no counterpart |
 
-The derived variables are the one place where the distinction is not obvious. `sum_var(vars)` creates a variable and ties it to its operands through a constraint posted in Choco, which a linear engine never sees, so the variable would be left free and the answer quietly wrong. They are refused rather than accepted and mis-solved; write the sum as an expression instead, as in `a + b + c`.
+The derived variables split along the same line as the constraints. `sum_var`, `neg_var`, `offset_var` and `scale_var` are linear, so they declare a variable and tie it to its operands with a posted equality, which every engine reads: the variable can then be optimised, read from a solution, and used in further constraints whatever the engine. `min_var`, `max_var`, `abs_var`, `count_var`, `arg_min_var`, `arg_max_var`, `element_var` and `mod_var` are not linear and stay with the constraint engine. None of them is silently mis-solved: what an engine cannot represent it refuses at the point of use.
 
 A time budget is honoured by `choco`, `choco_lcg` and `highs`. The `lp` engine cannot stop itself: its branch and bound runs to the end whatever budget it is given, and it writes the relaxation of each node to the standard output with no way to silence it. It is bundled inside Choco as an internal helper rather than as a solver meant to be exposed, and is kept here because it needs nothing to run.
 
@@ -245,10 +250,11 @@ The arithmetic and relational operators of GAML are overloaded over `pb_variable
 
 | Operator | Operands | Returns |
 |---|---|---|
-| `+` `-` `*` `/` `mod` | variable/variable, variable/int, int/variable | `pb_variable` |
+| `+` `-` `*` `/` | variable/variable, variable/number, number/variable | `pb_variable` |
+| `mod` | variable/variable, variable/int, int/variable | `pb_variable` |
 | `-` | variable | `pb_variable` |
 | `^` | variable/int, variable/variable | `pb_variable` |
-| `=` `!=` `<` `<=` `>` `>=` | variable/variable, variable/int, int/variable | `constraint` |
+| `=` `!=` `<` `<=` `>` `>=` | variable/variable, variable/number, number/variable | `constraint` |
 | `same(pb_variable, pb_variable)` | | `bool` |
 | `as_table(constraint)` | | `constraint` |
 
@@ -261,6 +267,17 @@ do post(queens[i] - queens[j] != j - i);
 An arithmetic operator builds a tree and adds nothing to the problem. The tree is handed to Choco as a whole when the relation is posted, which lets it compile the expression rather than materialise one intermediate variable per operator. A `pb_variable` holding an expression reports `"expression"` as its `kind`, and is materialised on first use where a real variable is required, for instance as the objective of a search.
 
 `=` builds a constraint here, not a boolean. `same` performs the identity test that `=` performs on every other type.
+
+The constant of an arithmetic or relational operator is a float, so a continuous model is written the same way as an integer one and needs no detour through `real_scalar`:
+
+```gaml
+// a balance between continuous variables
+do post(autoconsumed + imported = consumed);
+do post(consumed >= 62.5);
+do post(imported <= 1.5 * autoconsumed);
+```
+
+`mod` and `^` keep an integer operand, a fractional remainder or exponent meaning nothing here. A constraint engine reasons over integers, so it refuses a fractional constant by naming it and pointing at the linear engines; those take it as it is. On continuous variables a constraint engine also narrows domains to intervals rather than to points, so the value it reports is the middle of the interval and satisfies the constraints only to its precision, of the order of 1e-4 here, where a linear engine returns an exact answer. A continuous model belongs on `highs`.
 
 `as_table` recompiles a constraint built from an expression into a single table listing the combinations that satisfy it. A table propagates far more strongly than the decomposition, since it reasons over the whole relation at once, but the number of combinations grows as the product of the domain sizes.
 
@@ -537,4 +554,5 @@ In `models/Constraint Programming/`:
 | `Production Planning.gaml` | a linear model, run on either engine by changing one word |
 | `MPS File.gaml` | a problem read from a file rather than declared |
 | `Engine Benchmark.gaml` | the same problems solved by every engine, charted as they grow |
+| `Linear System.gaml` | a system of inequations written with expressions alone, and its feasible region |
 | `Non Linear.gaml` | a product of two decisions, and squares, on the constraint engine |

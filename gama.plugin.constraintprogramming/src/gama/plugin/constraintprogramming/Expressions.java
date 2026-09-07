@@ -65,7 +65,7 @@ public class Expressions {
 	/**
 	 * Builds a binary term over an operand and a constant on the right.
 	 */
-	private static GamaVariable binK(final IScope scope, final Term.Bin op, final GamaVariable a, final int k)
+	private static GamaVariable binK(final IScope scope, final Term.Bin op, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return of(a, new Term.Binary(op, term(scope, a), new Term.Const(k)));
 	}
@@ -73,7 +73,7 @@ public class Expressions {
 	/**
 	 * Builds a binary term over a constant on the left and an operand.
 	 */
-	private static GamaVariable kBin(final IScope scope, final Term.Bin op, final int k, final GamaVariable b)
+	private static GamaVariable kBin(final IScope scope, final Term.Bin op, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return of(b, new Term.Binary(op, new Term.Const(k), term(scope, b)));
 	}
@@ -89,7 +89,7 @@ public class Expressions {
 	/**
 	 * Builds a relation between an operand and a constant on the right.
 	 */
-	private static GamaConstraint relK(final IScope scope, final Relation.Rel op, final GamaVariable a, final int k)
+	private static GamaConstraint relK(final IScope scope, final Relation.Rel op, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return compile(scope, a, new Relation(op, term(scope, a), new Term.Const(k)));
 	}
@@ -97,7 +97,7 @@ public class Expressions {
 	/**
 	 * Builds a relation between a constant on the left and an operand.
 	 */
-	private static GamaConstraint kRel(final IScope scope, final Relation.Rel op, final int k, final GamaVariable b)
+	private static GamaConstraint kRel(final IScope scope, final Relation.Rel op, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return compile(scope, b, new Relation(op, new Term.Const(k), term(scope, b)));
 	}
@@ -129,7 +129,7 @@ public class Expressions {
 	@operator (value = "+", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the expression 'variable plus constant'.")
 	@no_test
-	public static GamaVariable plus(final IScope scope, final GamaVariable a, final int k)
+	public static GamaVariable plus(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return binK(scope, Term.Bin.ADD, a, k);
 	}
@@ -138,7 +138,7 @@ public class Expressions {
 	@operator (value = "+", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the expression 'constant plus variable'.")
 	@no_test
-	public static GamaVariable plus(final IScope scope, final int k, final GamaVariable b)
+	public static GamaVariable plus(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kBin(scope, Term.Bin.ADD, k, b);
 	}
@@ -156,7 +156,7 @@ public class Expressions {
 	@operator (value = "-", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the expression 'variable minus constant'.")
 	@no_test
-	public static GamaVariable minus(final IScope scope, final GamaVariable a, final int k)
+	public static GamaVariable minus(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return binK(scope, Term.Bin.SUB, a, k);
 	}
@@ -165,7 +165,7 @@ public class Expressions {
 	@operator (value = "-", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the expression 'constant minus variable'.")
 	@no_test
-	public static GamaVariable minus(final IScope scope, final int k, final GamaVariable b)
+	public static GamaVariable minus(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kBin(scope, Term.Bin.SUB, k, b);
 	}
@@ -192,7 +192,7 @@ public class Expressions {
 	@operator (value = "*", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the expression 'variable times constant'.")
 	@no_test
-	public static GamaVariable times(final IScope scope, final GamaVariable a, final int k)
+	public static GamaVariable times(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return binK(scope, Term.Bin.MUL, a, k);
 	}
@@ -201,7 +201,7 @@ public class Expressions {
 	@operator (value = "*", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the expression 'constant times variable'.")
 	@no_test
-	public static GamaVariable times(final IScope scope, final int k, final GamaVariable b)
+	public static GamaVariable times(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kBin(scope, Term.Bin.MUL, k, b);
 	}
@@ -219,7 +219,7 @@ public class Expressions {
 	@operator (value = "/", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the expression 'variable divided by constant', as an euclidean division.")
 	@no_test
-	public static GamaVariable divide(final IScope scope, final GamaVariable a, final int k)
+	public static GamaVariable divide(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		if (k == 0) throw GamaRuntimeException.error("Division by zero in a constraint expression", scope);
 		return binK(scope, Term.Bin.DIV, a, k);
@@ -229,7 +229,7 @@ public class Expressions {
 	@operator (value = "/", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the expression 'constant divided by variable', as an euclidean division.")
 	@no_test
-	public static GamaVariable divide(final IScope scope, final int k, final GamaVariable b)
+	public static GamaVariable divide(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kBin(scope, Term.Bin.DIV, k, b);
 	}
@@ -297,9 +297,8 @@ public class Expressions {
 		if (a.isReal() != b.isReal()) {
 			final GamaVariable real = a.isReal() ? a : b;
 			final GamaVariable integer = a.isReal() ? b : a;
-			// The channelling is an equality like any other as far as a linear engine is concerned
+			// The channelling is an equality like any other, and each engine encodes it its own way
 			return new GamaConstraint(real.getProblem(),
-					() -> real.getProblem().getModel().eq(real.asRealVar(scope), integer.asIntVar(scope)),
 					new Relation(Relation.Rel.EQ, new Term.Var(real), new Term.Var(integer)));
 		}
 		return rel(scope, Relation.Rel.EQ, a, b);
@@ -309,7 +308,7 @@ public class Expressions {
 	@operator (value = "=", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the expression equals the constant.", see = { "same" })
 	@no_test
-	public static GamaConstraint eq(final IScope scope, final GamaVariable a, final int k)
+	public static GamaConstraint eq(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return relK(scope, Relation.Rel.EQ, a, k);
 	}
@@ -318,7 +317,7 @@ public class Expressions {
 	@operator (value = "=", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the constant equals the expression.", see = { "same" })
 	@no_test
-	public static GamaConstraint eq(final IScope scope, final int k, final GamaVariable b)
+	public static GamaConstraint eq(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kRel(scope, Relation.Rel.EQ, k, b);
 	}
@@ -336,7 +335,7 @@ public class Expressions {
 	@operator (value = "!=", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the expression differs from the constant.")
 	@no_test
-	public static GamaConstraint neq(final IScope scope, final GamaVariable a, final int k)
+	public static GamaConstraint neq(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return relK(scope, Relation.Rel.NE, a, k);
 	}
@@ -345,7 +344,7 @@ public class Expressions {
 	@operator (value = "!=", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the constant differs from the expression.")
 	@no_test
-	public static GamaConstraint neq(final IScope scope, final int k, final GamaVariable b)
+	public static GamaConstraint neq(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kRel(scope, Relation.Rel.NE, k, b);
 	}
@@ -363,7 +362,7 @@ public class Expressions {
 	@operator (value = "<", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the expression is strictly smaller than the constant.")
 	@no_test
-	public static GamaConstraint lt(final IScope scope, final GamaVariable a, final int k)
+	public static GamaConstraint lt(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return relK(scope, Relation.Rel.LT, a, k);
 	}
@@ -372,7 +371,7 @@ public class Expressions {
 	@operator (value = "<", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the constant is strictly smaller than the expression.")
 	@no_test
-	public static GamaConstraint lt(final IScope scope, final int k, final GamaVariable b)
+	public static GamaConstraint lt(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kRel(scope, Relation.Rel.LT, k, b);
 	}
@@ -390,7 +389,7 @@ public class Expressions {
 	@operator (value = "<=", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the expression is smaller than or equal to the constant.")
 	@no_test
-	public static GamaConstraint le(final IScope scope, final GamaVariable a, final int k)
+	public static GamaConstraint le(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return relK(scope, Relation.Rel.LE, a, k);
 	}
@@ -399,7 +398,7 @@ public class Expressions {
 	@operator (value = "<=", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the constant is smaller than or equal to the expression.")
 	@no_test
-	public static GamaConstraint le(final IScope scope, final int k, final GamaVariable b)
+	public static GamaConstraint le(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kRel(scope, Relation.Rel.LE, k, b);
 	}
@@ -417,7 +416,7 @@ public class Expressions {
 	@operator (value = ">", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the expression is strictly greater than the constant.")
 	@no_test
-	public static GamaConstraint gt(final IScope scope, final GamaVariable a, final int k)
+	public static GamaConstraint gt(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return relK(scope, Relation.Rel.GT, a, k);
 	}
@@ -426,7 +425,7 @@ public class Expressions {
 	@operator (value = ">", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the constant is strictly greater than the expression.")
 	@no_test
-	public static GamaConstraint gt(final IScope scope, final int k, final GamaVariable b)
+	public static GamaConstraint gt(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kRel(scope, Relation.Rel.GT, k, b);
 	}
@@ -444,7 +443,7 @@ public class Expressions {
 	@operator (value = ">=", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the expression is greater than or equal to the constant.")
 	@no_test
-	public static GamaConstraint ge(final IScope scope, final GamaVariable a, final int k)
+	public static GamaConstraint ge(final IScope scope, final GamaVariable a, final double k)
 			throws GamaRuntimeException {
 		return relK(scope, Relation.Rel.GE, a, k);
 	}
@@ -453,7 +452,7 @@ public class Expressions {
 	@operator (value = ">=", category = { CPUtils.CATEGORY }, concept = { IConcept.OPTIMIZATION })
 	@doc (value = "Builds the constraint stating that the constant is greater than or equal to the expression.")
 	@no_test
-	public static GamaConstraint ge(final IScope scope, final int k, final GamaVariable b)
+	public static GamaConstraint ge(final IScope scope, final double k, final GamaVariable b)
 			throws GamaRuntimeException {
 		return kRel(scope, Relation.Rel.GE, k, b);
 	}

@@ -7,6 +7,7 @@ import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.solver.variables.SetVar;
 import org.chocosolver.solver.variables.Variable;
 
+import gama.plugin.constraintprogramming.terms.Term;
 import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.variable;
@@ -111,7 +112,7 @@ public class GamaSolution implements IValue {
 	public Integer valueOf(final IScope scope, final GamaVariable variable) throws GamaRuntimeException {
 		if (variable == null) throw GamaRuntimeException.error("Trying to read the value of a nil variable", scope);
 		if (values != null) {
-			final Double v = values.get(variable.getVariableName());
+			final Double v = valueFromTheEngine(variable);
 			return v == null ? null : (int) Math.round(v);
 		}
 		if (solution == null) return null;
@@ -209,10 +210,72 @@ public class GamaSolution implements IValue {
 	 */
 	public Double realValueOf(final IScope scope, final GamaVariable variable) throws GamaRuntimeException {
 		if (variable == null) throw GamaRuntimeException.error("Trying to read the value of a nil variable", scope);
-		if (values != null) return values.get(variable.getVariableName());
+		if (values != null) return valueFromTheEngine(variable);
 		if (solution == null) return null;
+		if (variable.getVariableKind() == GamaVariable.Kind.REAL) {
+			// A constraint engine keeps an interval for a continuous variable rather than a point, so the value it
+			// reports is the middle of what it narrowed the domain down to
+			try {
+				final double[] bounds = solution.getRealBounds(variable.asRealVar(scope));
+				return bounds == null ? null : (bounds[0] + bounds[1]) / 2;
+			} catch (final Exception e) {
+				return null;
+			}
+		}
 		final Integer v = valueOf(scope, variable);
 		return v == null ? null : (double) v;
+	}
+
+	/**
+	 * Reads a value out of what an engine reported, evaluating an expression rather than looking it up.
+	 *
+	 * <p>
+	 * An engine reports a value per column, and an expression is not a column: {@code a + b + c} is a way of speaking
+	 * about columns, not one of them. Written straight into a constraint or handed to a search as its objective, it is
+	 * something a model then wants to read back, so it is evaluated over the values the engine did report.
+	 * </p>
+	 *
+	 * @param variable
+	 *            the variable or expression to read
+	 * @return the value, or null when a term of it is not among the values reported
+	 */
+	private Double valueFromTheEngine(final GamaVariable variable) {
+		if (!variable.isExpression()) return values.get(variable.getVariableName());
+		return evaluate(variable.getTerm());
+	}
+
+	/**
+	 * Evaluates a term over the values an engine reported.
+	 *
+	 * @param term
+	 *            the term
+	 * @return its value, or null when it mentions something the engine did not report
+	 */
+	private Double evaluate(final Term term) {
+		return switch (term) {
+			case Term.Const c -> c.value();
+			case Term.Var v -> v.variable().isExpression() ? evaluate(v.variable().getTerm())
+					: values.get(v.variable().getVariableName());
+			case Term.Unary u -> {
+				final Double a = evaluate(u.operand());
+				yield a == null ? null : switch (u.op()) {
+					case NEG -> -a;
+					case ABS -> Math.abs(a);
+				};
+			}
+			case Term.Binary b -> {
+				final Double l = evaluate(b.left());
+				final Double r = evaluate(b.right());
+				yield l == null || r == null ? null : switch (b.op()) {
+					case ADD -> l + r;
+					case SUB -> l - r;
+					case MUL -> l * r;
+					case DIV -> r == 0 ? null : l / r;
+					case MOD -> r == 0 ? null : l % r;
+					case POW -> Math.pow(l, r);
+				};
+			}
+		};
 	}
 
 	@Override

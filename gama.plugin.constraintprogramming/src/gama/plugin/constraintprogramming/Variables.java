@@ -2,6 +2,8 @@ package gama.plugin.constraintprogramming;
 
 import org.chocosolver.solver.variables.IntVar;
 
+import gama.plugin.constraintprogramming.terms.Term;
+import gama.plugin.constraintprogramming.terms.Relation;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -214,7 +216,7 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the sum of the variables given as operand. Only available with the 'choco' engine.",
+			value = "Returns a new variable constrained to be equal to the sum of the variables given as operand. Available on every engine: the variable is declared and tied to its operands by a posted equality.",
 			comment = "Named sum_var rather than sum to avoid any ambiguity with the sum operator of the core library.",
 			examples = { @example (
 					value = "pb_variable total <- sum_var(loads);",
@@ -223,8 +225,16 @@ public class Variables {
 	@no_test
 	public static GamaVariable sumVar(final IScope scope, final IList<GamaVariable> vars) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, vars);
-		CPUtils.requireConstraintEngine(scope, p, "sum_var", "Write the sum as an expression instead, as in a + b + c.");
-		return p.register(p.getModel().sum(p.newName("sum"), CPUtils.intVars(scope, vars)));
+		if (vars.isEmpty()) throw GamaRuntimeException.error("sum_var expects at least one variable", scope);
+		final java.util.List<Term> terms = new java.util.ArrayList<>(vars.size());
+		double lb = 0;
+		double ub = 0;
+		for (final GamaVariable v : vars) {
+			terms.add(new Term.Var(v));
+			lb += v.getLowerBound();
+			ub += v.getUpperBound();
+		}
+		return derived(scope, p, "sum", Term.sum(terms), lb, ub, allIntegers(vars));
 	}
 
 	/**
@@ -412,13 +422,13 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the opposite of the operand. Implemented as a view. Only available with the 'choco' engine.",
+			value = "Returns a new variable constrained to be equal to the opposite of the operand. Available on every engine. Writing -x inline is cheaper when the variable itself is not needed.",
 			see = { "abs_var", "offset_var", "scale_var" })
 	@no_test
 	public static GamaVariable negVar(final IScope scope, final GamaVariable var) throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		CPUtils.requireConstraintEngine(scope, p, "neg_var", "Write it as an expression instead, as in -x.");
-		return p.register(p.getModel().neg(var.asIntVar(scope)));
+		return derived(scope, p, "neg", new Term.Unary(Term.Un.NEG, new Term.Var(var)), -var.getUpperBound(),
+				-var.getLowerBound(), var.getVariableKind() != GamaVariable.Kind.REAL);
 	}
 
 	/**
@@ -429,14 +439,16 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the first operand plus the constant given as second operand. Implemented as a view. Only available with the 'choco' engine.",
+			value = "Returns a new variable constrained to be equal to the first operand plus the constant given as second operand. Available on every engine. Writing x + k inline is cheaper when the variable itself is not needed.",
 			see = { "scale_var", "neg_var" })
 	@no_test
 	public static GamaVariable offsetVar(final IScope scope, final GamaVariable var, final int offset)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		CPUtils.requireConstraintEngine(scope, p, "offset_var", "Write it as an expression instead, as in x + k.");
-		return p.register(p.getModel().offset(var.asIntVar(scope), offset));
+		return derived(scope, p, "offset",
+				new Term.Binary(Term.Bin.ADD, new Term.Var(var), new Term.Const(offset)),
+				var.getLowerBound() + offset, var.getUpperBound() + offset,
+				var.getVariableKind() != GamaVariable.Kind.REAL);
 	}
 
 	/**
@@ -447,14 +459,17 @@ public class Variables {
 			category = { CPUtils.CATEGORY },
 			concept = { IConcept.OPTIMIZATION })
 	@doc (
-			value = "Returns a new variable constrained to be equal to the first operand multiplied by the constant given as second operand. Implemented as a view. Only available with the 'choco' engine.",
+			value = "Returns a new variable constrained to be equal to the first operand multiplied by the constant given as second operand. Available on every engine. Writing k * x inline is cheaper when the variable itself is not needed.",
 			see = { "offset_var", "neg_var" })
 	@no_test
 	public static GamaVariable scaleVar(final IScope scope, final GamaVariable var, final int factor)
 			throws GamaRuntimeException {
 		final GamaProblem p = CPUtils.problemOf(scope, var);
-		CPUtils.requireConstraintEngine(scope, p, "scale_var", "Write it as an expression instead, as in k * x.");
-		return p.register(p.getModel().mul(var.asIntVar(scope), factor));
+		final double a = var.getLowerBound() * factor;
+		final double b = var.getUpperBound() * factor;
+		return derived(scope, p, "scale",
+				new Term.Binary(Term.Bin.MUL, new Term.Const(factor), new Term.Var(var)), Math.min(a, b),
+				Math.max(a, b), var.getVariableKind() != GamaVariable.Kind.REAL);
 	}
 
 	/**
@@ -534,6 +549,57 @@ public class Variables {
 			throws GamaRuntimeException {
 		if (solution == null) return GamaListFactory.create(Types.INT);
 		return solution.setValueOf(scope, variable);
+	}
+
+
+	/**
+	 * Declares a variable equal to a term, and posts the equality that says so.
+	 *
+	 * <p>
+	 * A derived variable used to be a Choco view, which no other engine has any notion of. Declared as a column and
+	 * tied to its operands by a posted relation, it is a variable like any other on every engine: it can be read from
+	 * a solution, optimised, and used in further constraints. Choco loses the view and pays one propagator for it,
+	 * which is what its own {@code sum} already did.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param p
+	 *            the problem
+	 * @param prefix
+	 *            the prefix of the generated name
+	 * @param term
+	 *            what the variable is equal to
+	 * @param lb
+	 *            the lower bound its operands allow
+	 * @param ub
+	 *            the upper bound its operands allow
+	 * @param integral
+	 *            whether it can only take integer values
+	 * @return the variable
+	 */
+	private static GamaVariable derived(final IScope scope, final GamaProblem p, final String prefix, final Term term,
+			final double lb, final double ub, final boolean integral) throws GamaRuntimeException {
+		final String name = p.newName(prefix);
+		final GamaVariable result = integral
+				? p.register(GamaVariable.ofInt(p, name, (int) Math.floor(lb), (int) Math.ceil(ub), true))
+				: p.register(GamaVariable.ofReal(p, name, lb, ub));
+		new GamaConstraint(p, new Relation(Relation.Rel.EQ, new Term.Var(result), term)).post(scope);
+		return result;
+	}
+
+	/**
+	 * Whether every variable of a list takes integer values only.
+	 *
+	 * @param vars
+	 *            the variables
+	 * @return true if none of them is continuous
+	 */
+	private static boolean allIntegers(final IList<GamaVariable> vars) {
+		for (final GamaVariable v : vars) {
+			if (v.getVariableKind() == GamaVariable.Kind.REAL) return false;
+		}
+		return true;
 	}
 
 }

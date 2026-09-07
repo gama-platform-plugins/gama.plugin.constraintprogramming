@@ -47,7 +47,17 @@ public class LinearForm {
 	private void accumulate(final Term term, final double factor) {
 		switch (term) {
 			case Term.Const c -> constant += factor * c.value();
-			case Term.Var v -> coefficients.merge(v.variable(), factor, Double::sum);
+			case Term.Var v -> {
+				// A wrapper around an unevaluated term is not a column of the program: it stands for what it wraps,
+				// and flattening it is what lets a derived variable be understood by an engine that has no notion of
+				// one. Left as a column it would be free, with nothing tying it to its operands, and the answer would
+				// be wrong rather than refused.
+				if (v.variable().isExpression()) {
+					accumulate(v.variable().getTerm(), factor);
+				} else {
+					coefficients.merge(v.variable(), factor, Double::sum);
+				}
+			}
 			case Term.Unary u -> {
 				if (u.op() != Term.Un.NEG) throw new NonLinearException(term);
 				accumulate(u.operand(), -factor);
