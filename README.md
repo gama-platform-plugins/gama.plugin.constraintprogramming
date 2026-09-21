@@ -1,20 +1,23 @@
 # Constraint Programming for GAMA
 
-A GAMA plugin exposing [Choco-solver](https://choco-solver.org) 6 and [HiGHS](https://highs.dev) to GAML: declare decision variables, post constraints over them, and let a solver find an assignment that satisfies them, or the best one according to an objective.
+A GAMA plugin bringing two families of solver to GAML: constraint programming, through [Choco-solver](https://choco-solver.org) 6, and linear and mixed integer programming, through [HiGHS](https://highs.dev). Declare the decision variables, state the constraints over them, and let a solver find an assignment that satisfies them, or the best one according to an objective.
 
-The GAML API mirrors the shape of the Choco Java API, so anything written for Choco translates line by line, and the Choco documentation applies directly. The same model can be given to a linear or mixed integer solver instead, by naming the engine when the problem is created.
+The point of putting both behind one plugin is that they are written the same way. A model declares variables with `int_var` or `real_var`, states its constraints with the arithmetic and comparison operators of GAML, and reads a solution with `value_of`, whichever solver runs underneath. The engine is one word given when the problem is created, and nothing else in the model changes:
+
+```gaml
+problem p <- problem("my_problem", "highs");   // a linear engine
+problem p <- problem("my_problem", "choco");   // a constraint engine
+```
+
+That matters because the two families are complementary rather than interchangeable. A scheduling or routing model belongs to one, an allocation or blending model to the other, and a model can move between them as it grows without being rewritten. Where a solver genuinely cannot express something, `circuit` on a linear engine or a product of two decisions, it says so when the constraint is written, naming the operator and the alternative, rather than solving a different problem quietly.
+
+Nothing of either library is visible from GAML. Variables and constraints are held in a form that belongs to the plugin, and each engine derives its own representation from it, so a model is written against the plugin and not against Choco or HiGHS. Operators that only one family can honour are marked as such in their documentation.
 
 This version is developed for GAMA 2026-06 and above.
 
 ## What the engines are, and when to use which
 
-The same model can be handed to several solvers. The engine is chosen when the problem is created and nothing else in the model changes: the same declarations, the same expressions, the same way of reading a solution.
-
-```gaml
-problem p <- problem("my_problem", "highs");
-```
-
-Two families of engine sit behind that word. What each is good at follows from how it searches, so the two sections below start there.
+What each family is good at follows from how it searches, so the two sections below start there. The third says how to choose.
 
 ### Constraint programming: `choco`, `choco_lcg`
 
@@ -95,7 +98,19 @@ pb_variable on_time <- reify(end_last <= 17);
 solution best <- maximize(p, on_time);
 ```
 
-> **Careful:** a constraint that is built and never posted is silently ignored. `do all_different(q);` compiles, runs, and does nothing. The missing `post` is not reported.
+> **Careful:** on a problem that posts explicitly, a constraint that is built and never posted is silently ignored. `do all_different(q);` compiles, runs, and does nothing. The missing `post` is not reported.
+
+A problem can assert every constraint as it is built instead:
+
+```gaml
+problem p <- problem("my_problem", "choco", true);
+```
+
+That is the only mode of `highs` and `lp`, which have no use for a constraint they are not asserting, so the third operand only means something for `choco` and `choco_lcg`. Posting stays idempotent, so `do post(c)` is accepted and does nothing on such a problem: the same model text reads the same under either mode, which is what lets a model written for a linear engine run on a constraint engine unchanged.
+
+It does not remove `do post` from a model. GAML has no expression statement, so a constraint written on a line of its own still needs a statement to be evaluated at all, and `do post(...)` is that statement. What automatic posting changes is a constraint that is evaluated some other way: `constraint c <- a + b <= 10;` asserts it there and then, where the explicit mode leaves it inert until posted.
+
+What automatic posting costs is `reify`, `or_all`, `opposite`, `if_then` and `as_table`. All five reason about a constraint rather than assert it, and all five need one that has not been asserted yet; they refuse on such a problem and say how to get them back.
 
 The GAML side of the plugin talks to a `SolverEngine`, never to a particular solver. A problem describes variables and relations and hands them to its engine, which turns that description into whatever its own library wants, searches, and reports what the search cost. `ChocoEngine` is the only class that holds a Choco model and a Choco solver; `LinearEngine` and `HighsEngine` hold neither, so a problem on `highs` or `lp` never creates a Choco model at all.
 
@@ -115,12 +130,18 @@ A constraint asserts a *family* of relations rather than a single one, which is 
 
 ## Types
 
-| Type | Wraps | Notes |
+None of these is a solver object. Each holds what the plugin needs to describe the problem, and an engine derives its own representation from that when it runs.
+
+| Type | What it holds | Notes |
 |---|---|---|
-| `problem` | `org.chocosolver.solver.Model` | mutable and stateful; never copied |
-| `pb_variable` | `org.chocosolver.solver.variables.Variable` | int, bool, set or real |
-| `constraint` | `org.chocosolver.solver.constraints.Constraint` | inert until posted |
-| `solution` | `org.chocosolver.solver.Solution` | independent snapshot of the values |
+| `problem` | its engine, the variables declared and the constraints posted | mutable and stateful; never copied |
+| `pb_variable` | a name, a kind and a domain, or an unevaluated expression | int, bool, set or real |
+| `constraint` | the family of relations it asserts | inert until posted, unless the problem posts automatically |
+| `solution` | the values the engine reported | independent snapshot; reading it does not touch the solver |
+
+A `pb_variable` becomes a solver variable only where one is needed. On a constraint engine every declared variable is built at declaration, so that one no constraint mentions still takes a value in a solution; on a linear engine none is, and the description is read straight into the program. Set variables are the exception, having no description in terms of bounds: they are built for the constraint engine directly.
+
+A `constraint` holds relations rather than a solver constraint, which is what lets the same one be given to either family. The ones only a constraint engine can express, `circuit` and `all_different` among them, hold no relation and are reported as unsupported when posted elsewhere. The ones that are linear underneath, such as `all_equal` or `knapsack`, hold both their relations and the dedicated form a constraint engine propagates better.
 
 ### Attributes
 
@@ -143,8 +164,8 @@ A constraint asserts a *family* of relations rather than a single one, which is 
 |---|---|---|
 | `name` | `string` | name in the problem |
 | `kind` | `string` | `"int"`, `"bool"`, `"set"`, `"real"`, `"expression"` or `"other"` |
-| `lb` / `ub` | `int` | current bounds of the domain (int and bool variables) |
-| `instantiated` | `bool` | whether the domain holds a single value |
+| `lb` / `ub` | `int` | the bounds the variable was declared with (int and bool variables) |
+| `instantiated` | `bool` | whether a constraint engine has narrowed the domain to a single value; false on a linear engine, which holds no domain of its own |
 | `value` | `int` | that value, or `nil`. To read a variable **in a given solution**, use `value_of` |
 
 **`solution`**
@@ -152,7 +173,7 @@ A constraint asserts a *family* of relations rather than a single one, which is 
 | Attribute | Type | Meaning |
 |---|---|---|
 | `exists` | `bool` | false if the problem has no solution, or the search was interrupted first |
-| `values` | `map<string, int>` | every int and bool variable, by name |
+| `values` | `map<string, int>` | every int and bool variable, by name, rounded. Use `real_value_of` for a continuous variable |
 
 ---
 
