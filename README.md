@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/1310723978.svg)](https://doi.org/10.5281/zenodo.22887761)
+
 # Solvers for GAMA
 
 A GAMA plugin bringing two families of solver to GAML: constraint programming, through [Choco-solver](https://choco-solver.org) 6, and linear and mixed integer programming, through [HiGHS](https://highs.dev). Declare the decision variables, state the constraints over them, and let a solver find an assignment that satisfies them, or the best one according to an objective.
