@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/1310723978.svg)](https://doi.org/10.5281/zenodo.22887761)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22887761.svg)](https://doi.org/10.5281/zenodo.22887761)
 
 # Solvers for GAMA
 
