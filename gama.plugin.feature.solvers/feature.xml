@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.plugin.feature.solvers"
+      label="Constraint and Linear Solvers"
+      version="1.0.0.qualifier"
+      provider-name="GAMA Platform">
+
+   <description url="https://github.com/gama-platform-plugins/gama.plugin.solvers">
+      Adds the types and operators needed to declare decision variables in GAML, state the constraints over them, and let a solver find an assignment that satisfies them, or the best one according to an objective.
+
+      Two families of solver sit behind the same syntax, chosen by a word when the problem is created. Constraint programming, through Choco-solver, handles combinatorial structure: all_different, sequencing, routing, and integer arithmetic that is not linear. Linear and mixed integer programming, through HiGHS, which ships with this plugin as a native binary, handles models made of weighted sums and bounds. A model moves from one to the other without being rewritten, and what a solver cannot express it refuses when the constraint is written rather than solving something else.
+   </description>
+   
+   <license url="https://github.com/gama-platform-plugins/gama.plugin.solvers/blob/GAMA_2026-06/LICENSE.md">
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+   </license>
+
+   <plugin
+         id="gama.plugin.solvers"
+         version="0.0.0"/>
+
+</feature>

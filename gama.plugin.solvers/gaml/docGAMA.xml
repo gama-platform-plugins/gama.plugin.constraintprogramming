@@ -1,0 +1,2861 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doc>
+    <constantsCategories/>
+    <conceptList>
+        <concept id="action"/>
+        <concept id="agent_location"/>
+        <concept id="agent_movement"/>
+        <concept id="algorithm"/>
+        <concept id="architecture"/>
+        <concept id="arithmetic"/>
+        <concept id="asc"/>
+        <concept id="attribute"/>
+        <concept id="autosave"/>
+        <concept id="background"/>
+        <concept id="batch"/>
+        <concept id="bdi"/>
+        <concept id="behavior"/>
+        <concept id="camera"/>
+        <concept id="cast"/>
+        <concept id="chart"/>
+        <concept id="clustering"/>
+        <concept id="color"/>
+        <concept id="comodel"/>
+        <concept id="comparison"/>
+        <concept id="communication"/>
+        <concept id="condition"/>
+        <concept id="constant"/>
+        <concept id="container"/>
+        <concept id="csv"/>
+        <concept id="cycle"/>
+        <concept id="date"/>
+        <concept id="database"/>
+        <concept id="dem"/>
+        <concept id="dgs"/>
+        <concept id="diffusion"/>
+        <concept id="dimension"/>
+        <concept id="display"/>
+        <concept id="distribution"/>
+        <concept id="dxf"/>
+        <concept id="edge"/>
+        <concept id="elevation"/>
+        <concept id="enumeration"/>
+        <concept id="equation"/>
+        <concept id="experiment"/>
+        <concept id="facet"/>
+        <concept id="file"/>
+        <concept id="filter"/>
+        <concept id="fipa"/>
+        <concept id="fsm"/>
+        <concept id="geometry"/>
+        <concept id="gis"/>
+        <concept id="global"/>
+        <concept id="graph"/>
+        <concept id="graph_weight"/>
+        <concept id="gml"/>
+        <concept id="grid"/>
+        <concept id="graphic"/>
+        <concept id="graphic_unit"/>
+        <concept id="gui"/>
+        <concept id="halt"/>
+        <concept id="headless"/>
+        <concept id="hydrology"/>
+        <concept id="image"/>
+        <concept id="import"/>
+        <concept id="inheritance"/>
+        <concept id="init"/>
+        <concept id="inspector"/>
+        <concept id="layer"/>
+        <concept id="length_unit"/>
+        <concept id="light"/>
+        <concept id="list"/>
+        <concept id="dataframe"/>
+        <concept id="load_file"/>
+        <concept id="logical"/>
+        <concept id="loop"/>
+        <concept id="matrix"/>
+        <concept id="math"/>
+        <concept id="map"/>
+        <concept id="mirror"/>
+        <concept id="model"/>
+        <concept id="monitor"/>
+        <concept id="multi_level"/>
+        <concept id="multi_criteria"/>
+        <concept id="multi_simulation"/>
+        <concept id="neighbors"/>
+        <concept id="network"/>
+        <concept id="nil"/>
+        <concept id="node"/>
+        <concept id="obj"/>
+        <concept id="obstacle"/>
+        <concept id="opengl"/>
+        <concept id="operator"/>
+        <concept id="optimization"/>
+        <concept id="osm"/>
+        <concept id="output"/>
+        <concept id="overlay"/>
+        <concept id="parameter"/>
+        <concept id="pause"/>
+        <concept id="permanent"/>
+        <concept id="physics_engine"/>
+        <concept id="point"/>
+        <concept id="probability"/>
+        <concept id="pseudo_variable"/>
+        <concept id="r"/>
+        <concept id="random"/>
+        <concept id="random_operator"/>
+        <concept id="raster"/>
+        <concept id="regression"/>
+        <concept id="reflex"/>
+        <concept id="refresh"/>
+        <concept id="save_file"/>
+        <concept id="scheduler"/>
+        <concept id="serialize"/>
+        <concept id="shape"/>
+        <concept id="shapefile"/>
+        <concept id="shortest_path"/>
+        <concept id="skill"/>
+        <concept id="sound"/>
+        <concept id="spatial_computation"/>
+        <concept id="spatial_relation"/>
+        <concept id="spatial_transformation"/>
+        <concept id="species"/>
+        <concept id="class"/>
+        <concept id="sport"/>
+        <concept id="statistic"/>
+        <concept id="string"/>
+        <concept id="surface_unit"/>
+        <concept id="svg"/>
+        <concept id="system"/>
+        <concept id="task_based"/>
+        <concept id="ternary"/>
+        <concept id="text"/>
+        <concept id="texture"/>
+        <concept id="test"/>
+        <concept id="3d"/>
+        <concept id="tif"/>
+        <concept id="time"/>
+        <concept id="time_unit"/>
+        <concept id="topology"/>
+        <concept id="torus"/>
+        <concept id="transport"/>
+        <concept id="txt"/>
+        <concept id="type"/>
+        <concept id="update"/>
+        <concept id="volume_unit"/>
+        <concept id="weight_unit"/>
+        <concept id="write"/>
+        <concept id="xml"/>
+        <concept id="world"/>
+    </conceptList>
+    <constants/>
+    <operatorsCategories>
+        <category id="Iterator operators"/>
+        <category id="Constraint and linear solvers"/>
+    </operatorsCategories>
+    <operators>
+        <operator alphabetOrder="sz" id="sub_circuit" name="sub_circuit">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="size" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the variables, read as successors, form a single circuit visiting exactly as many nodes as the second operand indicates, the others pointing to themselves. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="circuit"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="add_hint" name="add_hint">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="variable" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="value" position="1" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Tells the solver to try this value first for this variable, and returns the variable. Only guides the search, never restricts the solutions. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="hint_from"/>
+                    <see id="clear_hints"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do add_hint(slot_of_worker_3, 5);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="and_all" name="and_all">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="constraints" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaConstraint&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that all the constraints of the list hold. Available on every engine when every constraint of the list is itself, since the conjunction is then simply their relations put together; otherwise it needs the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="or_all"/>
+                    <see id="opposite"/>
+                    <see id="if_then"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="bc" id="bin_packing" name="bin_packing">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="itemBin" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="itemSize" position="1" type="gama.api.types.list.IList&lt;int&gt;"/>
+                    <operand name="binLoad" position="2" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="offset" position="3" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that, item i being placed in the bin given by itemBin[i] and weighing itemSize[i], each bin b carries the load binLoad[b]. The last operand is the index of the first bin. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="knapsack"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(bin_packing(assignment, [4, 2, 3], loads, 0));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="with_conflict_ordering" name="with_conflict_ordering">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Strategies.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Adds conflict ordering on top of the strategy currently in use, and returns the problem. A generalisation of last conflict, which keeps the whole sequence of variables involved in recent failures. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="with_last_conflict"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="bc" id="clear_hints" name="clear_hints">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Removes every hint given to the solver of this problem, and returns the problem. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="hint_from"/>
+                    <see id="add_hint"/>
+                    <see id="reset"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="neg_var" name="neg_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the opposite of the operand. Available on every engine. Writing -x inline is cheaper when the variable itself is not needed.</result>
+                <seeAlso>
+                    <see id="abs_var"/>
+                    <see id="offset_var"/>
+                    <see id="scale_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="values_of" name="values_of">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="1" returnType="gama.api.types.list.IList&lt;int&gt;" type="-13">
+                    <operand name="solution" position="0" type="gama.plugin.solvers.GamaSolution"/>
+                    <operand name="variables" position="1" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns the values taken by the variables given as second operand in the solution given as first operand, in the same order.</result>
+                <seeAlso>
+                    <see id="value_of"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="list&lt;int&gt; positions &lt;- values_of(sol, queens);" isExecutable="false" isTestOnly="false" test="false" type="gama.api.types.list.IList&lt;int&gt;"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="set_var" name="set_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                    <operand name="mandatory" position="2" type="gama.api.types.list.IList&lt;int&gt;"/>
+                    <operand name="possible" position="3" type="gama.api.types.list.IList&lt;int&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Declares a set variable in a problem and returns it. The third operand lists the values that the set necessarily contains, the fourth the values it may contain. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="int_var"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable s &lt;- set_var(p, &quot;s&quot;, [], [1, 2, 3, 4]);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="inverse_channeling" name="inverse_channeling">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="first" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="second" position="1" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that first[j] = i if and only if second[i] = j. Used to keep two complementary views of the same assignment consistent. Only available with the 'choco' engine.</result>
+                <comment>Named inverse_channeling rather than inverse because inverse is already an operator of the core library.</comment>
+                <seeAlso>
+                    <see id="element"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="arg_min_var" name="arg_min_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the index, starting at 0, of the smallest variable of the operand. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="arg_max_var"/>
+                    <see id="min_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="offset_var" name="offset_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="offset" position="1" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the first operand plus the constant given as second operand. Available on every engine. Writing x + k inline is cheaper when the variable itself is not needed.</result>
+                <seeAlso>
+                    <see id="scale_var"/>
+                    <see id="neg_var"/>
+                    <see id="abs_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="opposite" name="opposite">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="constraint" position="0" type="gama.plugin.solvers.GamaConstraint"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the constraint given as operand does not hold. Only available with the 'choco' engine.</result>
+                <comment>Named opposite rather than not because not is already an operator of the core library.</comment>
+                <seeAlso>
+                    <see id="and_all"/>
+                    <see id="or_all"/>
+                    <see id="if_then"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="all_different" name="all_different">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that all the variables of the list take distinct values. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="all_different_except_0"/>
+                    <see id="all_equal"/>
+                    <see id="n_values"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(all_different(queens));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="dh" id="global_cardinality" name="global_cardinality">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="values" position="1" type="gama.api.types.list.IList&lt;int&gt;"/>
+                    <operand name="occurrences" position="2" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="closed" position="3" type="bool"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that, for each index i, the number of variables of the first operand taking the value values[i] is equal to occurrences[i]. If the last operand is true, the variables can only take values listed in the second operand. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="count_var"/>
+                    <see id="among_values"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(global_cardinality(slots, [1, 2, 3], loads, true));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="set_precision" name="set_precision">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Reals.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="precision" position="1" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Sets the precision below which the solver considers a real domain instantiated, and returns the problem. Applies to the real variables declared afterwards.</result>
+                <seeAlso>
+                    <see id="real_var"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do set_precision(p, 0.001);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="optimize" name="optimize">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Models.java" contentType="-13" returnType="gama.plugin.solvers.GamaSolution" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Solves a problem for the objective it carries, in the direction that objective was declared with, and returns the solution. Only meaningful on a problem read from a file, since a problem built by hand states its objective in the call to minimize or maximize.</result>
+                <seeAlso>
+                    <see id="minimize"/>
+                    <see id="maximize"/>
+                    <see id="read_mps"/>
+                    <see id="maximises"/>
+                    <see id="objective_of"/>
+                    <see id="objective_value"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="solution best &lt;- optimize(read_mps(&quot;../includes/afiro.mps&quot;));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaSolution"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="dh" id="element_var" name="element_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="table" position="0" type="gama.api.types.matrix.IMatrix"/>
+                    <operand name="row" position="1" type="int"/>
+                    <operand name="index" position="2" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="table" position="0" type="gama.api.types.list.IList&lt;int&gt;"/>
+                    <operand name="index" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the value read in the matrix given as first operand, on the row given as second, at the column given by the variable of the third. Indices start at 0. Only available with the 'choco' engine.
+Returns a new variable constrained to be equal to the value read in the table given as first operand, at the index given by the variable of the second operand. Indices start at 0. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="element_var"/>
+                    <see id="element"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable leg &lt;- element_var(distances, i, next[i]);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable cost &lt;- element_var([10, 4, 7], choice);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="max_var" name="max_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the largest value taken by the variables given as operand. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="min_var"/>
+                    <see id="sum_var"/>
+                    <see id="arg_max_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="set_value_of" name="set_value_of">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="1" returnType="gama.api.types.list.IList&lt;int&gt;" type="-13">
+                    <operand name="solution" position="0" type="gama.plugin.solvers.GamaSolution"/>
+                    <operand name="variable" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns the elements of the set variable given as second operand in the solution given as first operand.</result>
+                <seeAlso>
+                    <see id="value_of"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="path" name="path">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="start" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="end" position="2" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the variables, read as successors, form a single hamiltonian path going from the node given as second operand to the one given as third. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="circuit"/>
+                    <see id="tree"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="dh" id="decreasing" name="decreasing">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="delta" position="1" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that each variable of the list is smaller than or equal to the previous one, minus the delta given as second operand. Available on every engine: it amounts to a chain of inequalities.</result>
+                <seeAlso>
+                    <see id="increasing"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="!=" name="!=">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the constant differs from the expression.
+Builds the constraint stating that the two operands differ.
+Builds the constraint stating that the expression differs from the constant.</result>
+                <seeAlso>
+                    <see id="="/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="real_view" name="real_view">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Reals.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="variable" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="precision" position="1" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a real variable that follows the integer variable given as first operand, with the precision given as second. Implemented as a view, so it costs neither a propagator nor a search decision.</result>
+                <seeAlso>
+                    <see id="real_var"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable r &lt;- real_view(x, 0.01);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="sorted" name="sorted">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="sortedVars" position="1" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the second list contains the same values as the first, in increasing order. Only available with the 'choco' engine.</result>
+                <comment>Named sorted rather than sort because sort is already an operator of the core library.</comment>
+                <seeAlso>
+                    <see id="increasing"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="bc" id="bool_var" name="bool_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Declares a boolean variable in a problem and returns it. A boolean variable is an integer variable whose domain is [0, 1], and can be used wherever an integer variable is expected.</result>
+                <seeAlso>
+                    <see id="bool_vars"/>
+                    <see id="int_var"/>
+                    <see id="reify"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable b &lt;- bool_var(p, &quot;b&quot;);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="increasing" name="increasing">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="delta" position="1" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that each variable of the list is greater than or equal to the previous one, plus the delta given as second operand. A delta of 1 makes the sequence strictly increasing. Available on every engine: it amounts to a chain of inequalities.</result>
+                <seeAlso>
+                    <see id="decreasing"/>
+                    <see id="sorted"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="bc" id="bool_vars" name="bool_vars">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="776002" returnType="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                    <operand name="number" position="2" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Declares a list of boolean variables, named after the second operand followed by their index, and returns them.</result>
+                <seeAlso>
+                    <see id="bool_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="with_best_bound" name="with_best_bound">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Strategies.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Makes the strategy try, for each variable, the bound that looks the most promising for the objective, and returns the problem. Only meaningful on an optimisation problem, and only if the strategy branches on integer variables. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="use_strategy"/>
+                    <see id="minimize"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="variable_named" name="variable_named">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns the variable declared under this name in the problem, or nil if there is none.</result>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable x &lt;- variable_named(p, &quot;Q_0&quot;);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="tree" name="tree">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="nbRoots" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the variables, read as predecessors, form an anti-arborescence made of as many trees as the second operand indicates. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="circuit"/>
+                    <see id="path"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="all_solutions" name="all_solutions">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="776004" returnType="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaSolution&gt;" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="limit" position="1" type="int"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="776004" returnType="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaSolution&gt;" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Runs the solver on a problem and returns at most as many solutions as the second operand indicates. Only available with the 'choco' engine.
+Runs the solver on a problem and returns every solution it finds. Beware that the number of solutions of a constraint problem is very often enormous: use the two-operand form unless the problem is known to be small. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="all_solutions"/>
+                    <see id="search"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="list&lt;solution&gt; five &lt;- all_solutions(p, 5);" isExecutable="false" isTestOnly="false" test="false" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaSolution&gt;"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="list&lt;solution&gt; all &lt;- all_solutions(p);" isExecutable="false" isTestOnly="false" test="false" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaSolution&gt;"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="dh" id="hint_from" name="hint_from">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="int" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="solution" position="1" type="gama.plugin.solvers.GamaSolution"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Tells the solver to try, for each variable of the problem, the value it took in the solution given as second operand, and returns the number of hints that could be applied. Only available with the 'choco' engine.</result>
+                <comment>Variables are matched by name, so the solution may come from another problem, typically the one built at the previous simulation step. A hint only guides the search: it can never make a result wrong, only faster or slower. Variables of the solution that have no counterpart by name in the problem are skipped, which is what the returned count lets you check.</comment>
+                <seeAlso>
+                    <see id="add_hint"/>
+                    <see id="clear_hints"/>
+                    <see id="minimize"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="int applied &lt;- hint_from(p, previous_solution);" isExecutable="false" isTestOnly="false" test="false" type="int"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="post_all" name="post_all">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="776003" returnType="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaConstraint&gt;" type="-13">
+                    <operand name="constraints" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaConstraint&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Adds every constraint of the list to its problem, and returns the list. Convenient when the constraints have been accumulated in a loop.</result>
+                <seeAlso>
+                    <see id="post"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post_all(precedence_constraints);" isExecutable="false" isTestOnly="false" test="false" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaConstraint&gt;"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="not_all_equal" name="not_all_equal">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that at least two variables of the list take different values. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="all_equal"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="if_then" name="if_then">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="condition" position="0" type="gama.plugin.solvers.GamaConstraint"/>
+                    <operand name="consequence" position="1" type="gama.plugin.solvers.GamaConstraint"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that if the first constraint holds, then the second one holds too. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="or_all"/>
+                    <see id="opposite"/>
+                    <see id="and_all"/>
+                    <see id="reify"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(if_then(arithm(x, &quot;=&quot;, 1), arithm(y, &quot;&gt;&quot;, 5)));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="post" name="post">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="constraint" position="1" type="gama.plugin.solvers.GamaConstraint"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="constraint" position="0" type="gama.plugin.solvers.GamaConstraint"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Adds a constraint to the problem given as first operand, checking that it was indeed built over the variables of that problem.
+Adds a constraint to the problem over whose variables it has been built, and returns it. A constraint that is never posted is simply ignored by the solver.</result>
+                <comment>Posting the same constraint twice has no effect the second time, so a constraint held in a variable can safely be posted inside a loop.</comment>
+                <seeAlso>
+                    <see id="post"/>
+                    <see id="post_all"/>
+                    <see id="reify"/>
+                    <see id="search"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(p, all_different(queens));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="do post(all_different(queens));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="value_of" name="value_of">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="int" type="-13">
+                    <operand name="solution" position="0" type="gama.plugin.solvers.GamaSolution"/>
+                    <operand name="variable" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns the value taken by the variable given as second operand in the solution given as first operand, or nil if no solution was found.</result>
+                <seeAlso>
+                    <see id="values_of"/>
+                    <see id="set_value_of"/>
+                    <see id="real_value_of"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="int first_queen &lt;- value_of(sol, queens[0]);" isExecutable="false" isTestOnly="false" test="false" type="int"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="bc" id="circuit" name="circuit">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the variables, read as successors (vars[i] = j meaning that j follows i), form a single hamiltonian circuit. Indices start at 0. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="sub_circuit"/>
+                    <see id="path"/>
+                    <see id="tree"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="mod_var" name="mod_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="divisor" position="1" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the remainder of the euclidean division of the first operand by the second. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="abs_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="abs_var" name="abs_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the absolute value of the operand. Implemented as a view: it costs neither a propagator nor a search decision. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="neg_var"/>
+                    <see id="offset_var"/>
+                    <see id="scale_var"/>
+                    <see id="mod_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="among_values" name="among_values">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="nb" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="vars" position="1" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="values" position="2" type="gama.api.types.list.IList&lt;int&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the first variable is equal to the number of variables of the second operand taking one of the values of the third. Only available with the 'choco' engine.</result>
+                <comment>Named among_values rather than among because among is already an operator of the core library.</comment>
+                <seeAlso>
+                    <see id="count_var"/>
+                    <see id="global_cardinality"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="read_mps" name="read_mps">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Models.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="path" position="0" type="string"/>
+                    <operand name="engine" position="1" type="string"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Models.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="path" position="0" type="string"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Reads a problem written in the MPS format and returns it, to be solved by the engine named as second operand.
+Reads a linear or mixed integer problem written in the MPS format and returns it, ready to be solved by the linear engine. Variables, constraints and objective come from the file; nothing has to be declared in the model.</result>
+                <comment>The constraint engine only reasons over integers, so it refuses a file carrying fractional data or continuous columns. Reading the same file with both engines is the way to compare them on a model neither of us wrote.The path is resolved relative to the model, as everywhere else in GAML. Compressed files are not read: uncompress them first, whether they use gzip or the packed form Netlib distributes for its own test set.</comment>
+                <seeAlso>
+                    <see id="read_mps"/>
+                    <see id="optimize"/>
+                    <see id="objective_of"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="problem p &lt;- read_mps(&quot;../includes/model.mps&quot;, &quot;choco&quot;);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="problem p &lt;- read_mps(&quot;../includes/afiro.mps&quot;);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="arg_max_var" name="arg_max_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the index, starting at 0, of the largest variable of the operand. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="arg_min_var"/>
+                    <see id="max_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="+" name="+">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the expression 'variable plus constant'.
+Builds the expression 'constant plus variable'.
+Builds the expression 'first plus second'. Nothing is added to the problem until the expression takes part in a posted constraint.</result>
+                <seeAlso>
+                    <see id="-"/>
+                    <see id="*"/>
+                    <see id="as_table"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(x + y = 10);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="same" name="same">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="bool" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns whether the two operands designate the same variable of the same problem. This is the test that '=' would perform on any other type, and that it no longer performs here since '=' expresses a constraint.</result>
+                <seeAlso>
+                    <see id="="/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="if (same(queens[0], first_queen)) { ... }" isExecutable="false" isTestOnly="false" test="false" type="bool"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="all_different_except_0" name="all_different_except_0">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that all the variables of the list take distinct values, except those taking the value 0, which is used to denote an absence of assignment. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="all_different"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="maximises" name="maximises">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Models.java" contentType="-13" returnType="bool" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns whether the objective of a problem read from a file has to be maximised. Minimising is the default of the MPS format, and only an OBJSENSE section changes it.</result>
+                <seeAlso>
+                    <see id="optimize"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="knapsack" name="knapsack">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="occurrences" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="weightSum" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="energySum" position="2" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="weights" position="3" type="gama.api.types.list.IList&lt;int&gt;"/>
+                    <operand name="energies" position="4" type="gama.api.types.list.IList&lt;int&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint linking the number of occurrences of each item, the total weight and the total energy, given the weight and the energy of each item. Available on every engine: it amounts to two linear equalities. A constraint engine also gets the dedicated propagator, which prunes more than the two equalities alone.</result>
+                <seeAlso>
+                    <see id="bin_packing"/>
+                    <see id="scalar"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="lex_less" name="lex_less">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="first" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="second" position="1" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the first list is strictly smaller than the second in the lexicographic order. Useful to break symmetries between interchangeable groups of variables. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="lex_less_eq"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="at_least_n_values" name="at_least_n_values">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="nb" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the variables of the first operand take at least as many distinct values as the second operand. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="n_values"/>
+                    <see id="at_most_n_values"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="min_var" name="min_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the smallest value taken by the variables given as operand. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="max_var"/>
+                    <see id="sum_var"/>
+                    <see id="arg_min_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="reify" name="reify">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="constraint" position="0" type="gama.plugin.solvers.GamaConstraint"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a boolean variable that is true if and only if the constraint given as operand holds. Reifying a constraint adds the link between the constraint and the variable to the problem immediately; the constraint itself is not posted, and does not have to hold. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="bool_var"/>
+                    <see id="if_then"/>
+                    <see id="post"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable is_late &lt;- reify(arithm(end, &quot;&gt;&quot;, deadline));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="scale_var" name="scale_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="factor" position="1" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the first operand multiplied by the constant given as second operand. Available on every engine. Writing k * x inline is cheaper when the variable itself is not needed.</result>
+                <seeAlso>
+                    <see id="offset_var"/>
+                    <see id="neg_var"/>
+                    <see id="abs_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="member" name="member">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="values" position="1" type="gama.api.types.list.IList&lt;int&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the variable takes one of the values of the list. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="not_member"/>
+                    <see id="arithm"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(member(x, [1, 3, 7]));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="table" name="table">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="rows" position="1" type="gama.api.types.matrix.IMatrix"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="rows" position="1" type="gama.api.types.matrix.IMatrix"/>
+                    <operand name="allowed" position="2" type="bool"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the values taken by the variables form one of the rows of the matrix. Each row is one allowed combination, and the matrix must have as many columns as there are variables. Only available with the 'choco' engine.
+Builds the constraint stating that the values taken by the variables form one of the rows of the matrix when the last operand is true, and none of them when it is false. Only available with the 'choco' engine.</result>
+                <comment>This is the way to express a relation that has no analytical form: a tabulated response curve, an empirical compatibility table, a rule set given by extension. A table propagates strongly, since it reasons over the whole relation at once, but its size grows as the product of the domains.</comment>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(table(vars, matrix([[1, 2], [2, 4], [3, 8]])));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+                <seeAlso>
+                    <see id="as_table"/>
+                    <see id="element"/>
+                    <see id="table"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="use_restarts" name="use_restarts">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Strategies.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="policy" position="1" type="string"/>
+                    <operand name="cutoff" position="2" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Makes the solver restart its search periodically, and returns the problem. Accepted policies: 'luby', 'geometric', 'linear', 'constant' and 'on_solution'. The third operand is the number of failures before the first restart; the policy decides how that number grows afterwards. Only available with the 'choco' engine.</result>
+                <comment>Restarting escapes a bad early decision that the search would otherwise pay for during a very long time. It only pays off with a strategy that learns, such as 'dom_over_w_deg_ref' or 'conflict_history', and with record_nogoods, which is what keeps the effort of a run from being lost at the next one. 'on_solution' restarts after each solution instead, which is useful for optimisation.</comment>
+                <seeAlso>
+                    <see id="record_nogoods"/>
+                    <see id="use_strategy"/>
+                    <see id="problem"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do use_restarts(p, &quot;luby&quot;, 500);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="&lt;=" name="&lt;=">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the expression is smaller than or equal to the constant.
+Builds the constraint stating that the constant is smaller than or equal to the expression.
+Builds the constraint stating that the first operand is smaller than or equal to the second.</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="not_member" name="not_member">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="values" position="1" type="gama.api.types.list.IList&lt;int&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the variable takes none of the values of the list. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="member"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="real_var" name="real_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                    <operand name="lb" position="2" type="float"/>
+                    <operand name="ub" position="3" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Declares a real (continuous) variable in a problem and returns it.</result>
+                <comment>Real variables are only usable with the few constraints that support them; without the Ibex library, the solver reasons on their bounds only.</comment>
+                <seeAlso>
+                    <see id="int_var"/>
+                    <see id="set_precision"/>
+                    <see id="real_view"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="objective_of" name="objective_of">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Models.java" contentType="-13" returnType="string" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns the objective of a problem read from a file, written out as a string, or nil if the file declares none. Such an objective is a linear form over the variables rather than a variable of its own, which is why it is not returned as one.</result>
+                <seeAlso>
+                    <see id="optimize"/>
+                    <see id="objective_value"/>
+                    <see id="read_mps"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="int_vars" name="int_vars">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="776002" returnType="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                    <operand name="number" position="2" type="int"/>
+                    <operand name="lb" position="3" type="float"/>
+                    <operand name="ub" position="4" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Declares a list of integer variables sharing the same domain, named after the second operand followed by their index, and returns them.</result>
+                <seeAlso>
+                    <see id="int_var"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="list&lt;pb_variable&gt; queens &lt;- int_vars(p, &quot;Q&quot;, 8, 1, 8);" isExecutable="false" isTestOnly="false" test="false" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="int_var" name="int_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                    <operand name="values" position="2" type="gama.api.types.list.IList&lt;int&gt;"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                    <operand name="lb" position="2" type="float"/>
+                    <operand name="ub" position="3" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Declares an integer variable in a problem, whose domain is the explicit list of values given as third operand, and returns it.
+Declares an integer variable in a problem, with a domain going from the third to the fourth operand, and returns it.</result>
+                <comment>Bounds are clamped to the range supported by the solver, so #infinity (or -#infinity) can be used to declare an unbounded variable. Beyond 65536 values, the domain is represented by its bounds only, which uses far less memory but propagates less precisely.</comment>
+                <seeAlso>
+                    <see id="int_var"/>
+                    <see id="int_vars"/>
+                    <see id="bool_var"/>
+                    <see id="real_var"/>
+                    <see id="set_var"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable x &lt;- int_var(p, &quot;x&quot;, [1, 3, 7]);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable x &lt;- int_var(p, &quot;x&quot;, 1, 9);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="real_element" name="real_element">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Reals.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="value" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="table" position="1" type="gama.api.types.list.IList&lt;float&gt;"/>
+                    <operand name="index" position="2" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the real variable given as first operand is equal to the value read in the table of floats at the index given by the third operand. Indices start at 0.</result>
+                <comment>This is the practical way to bring a non-linear relation into a model over reals: tabulate it against an integer index.</comment>
+                <seeAlso>
+                    <see id="element"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="record_nogoods" name="record_nogoods">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Strategies.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Makes the solver remember, at each restart, the assignments it has already proven impossible, and returns the problem. Without it a restart throws away everything the previous run had established. Only available with the 'choco' engine.</result>
+                <comment>Only useful together with use_restarts.</comment>
+                <seeAlso>
+                    <see id="use_restarts"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do record_nogoods(p);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="real_value_of" name="real_value_of">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Models.java" contentType="-13" returnType="float" type="-13">
+                    <operand name="solution" position="0" type="gama.plugin.solvers.GamaSolution"/>
+                    <operand name="variable" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns the value taken by a variable in a solution, without rounding it. The linear engine carries continuous variables, whose value value_of would round to the nearest integer.</result>
+                <seeAlso>
+                    <see id="value_of"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="float exact &lt;- real_value_of(best, quantity);" isExecutable="false" isTestOnly="false" test="false" type="float"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="real_scalar" name="real_scalar">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Reals.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="coeffs" position="1" type="gama.api.types.list.IList&lt;float&gt;"/>
+                    <operand name="op" position="2" type="string"/>
+                    <operand name="value" position="3" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Reals.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="coeffs" position="1" type="gama.api.types.list.IList&lt;float&gt;"/>
+                    <operand name="op" position="2" type="string"/>
+                    <operand name="value" position="3" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint 'sum of the variables weighted by the real coefficients, operator variable'. The variables may be integer or real, in any mix, on either side.
+Builds the constraint 'sum of the variables weighted by the real coefficients, operator value'. The variables may be integer or real, in any mix.</result>
+                <comment>Named real_scalar rather than scalar because the coefficients are floats and the two would be ambiguous in GAML, where an int is accepted wherever a float is expected.</comment>
+                <seeAlso>
+                    <see id="real_scalar"/>
+                    <see id="scalar"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(real_scalar(quantities, [1.5, 0.75, 2.0], &quot;=&quot;, total_cost));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="do post(real_scalar(quantities, [1.5, 0.75, 2.0], &quot;&lt;=&quot;, 100.0));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="^" name="^">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the expression 'first to the power second'.
+Builds the expression 'variable to the power constant'.</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="maximize" name="maximize">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaSolution" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="objective" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaSolution" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="objective" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="within" position="2" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Runs the solver on a problem and returns the solution giving the largest value to the variable given as second operand.
+Runs the solver on a problem for at most the duration given as third operand, and returns the best solution found for the variable to maximise.</result>
+                <seeAlso>
+                    <see id="minimize"/>
+                    <see id="search"/>
+                    <see id="maximize"/>
+                    <see id="optimize"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="solution best &lt;- maximize(p, total_value);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaSolution"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="solution best &lt;- maximize(p, total_value, 20 #s);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaSolution"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="as_table" name="as_table">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="constraint" position="0" type="gama.plugin.solvers.GamaConstraint"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Recompiles a constraint built from an expression into a single table constraint, listing the combinations of values that satisfy it, and returns it. Only available with the 'choco' engine.</result>
+                <comment>A table propagates far more strongly than the chain of propagators the expression is decomposed into, because it reasons over the whole relation at once. It is only applicable when the variables of the expression have small domains, since the number of combinations grows as their product. Only works on a constraint that came from an expression, not on a global constraint.</comment>
+                <seeAlso>
+                    <see id="="/>
+                    <see id="+"/>
+                    <see id="table"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(as_table(x * y + z = 12));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="or_all" name="or_all">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="constraints" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaConstraint&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that at least one of the constraints of the list holds. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="and_all"/>
+                    <see id="opposite"/>
+                    <see id="if_then"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="with_last_conflict" name="with_last_conflict">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Strategies.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Adds last conflict reasoning on top of the strategy currently in use, and returns the problem. After a failure, the solver retries the variable involved in it before following its usual order. Only available with the 'choco' engine.</result>
+                <comment>Very cheap and rarely harmful: it is the first thing to add to any strategy.</comment>
+                <seeAlso>
+                    <see id="use_strategy"/>
+                    <see id="with_conflict_ordering"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do with_last_conflict(p);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="&gt;" name="&gt;">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the constant is strictly greater than the expression.
+Builds the constraint stating that the expression is strictly greater than the constant.
+Builds the constraint stating that the first operand is strictly greater than the second.</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="problem" name="problem">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Strategies.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="name" position="0" type="string"/>
+                    <operand name="backend" position="1" type="string"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Creates a problem solved by the engine named as second operand. Accepted names: 'choco', the constraint engine, which handles everything the plugin exposes; 'choco_lcg', the same with lazy clause generation, where the solver derives a clause from each conflict and keeps it; 'lp', the linear engine bundled with Choco, which only accepts linear constraints but settles a linear model in one go where a constraint engine would search; and 'highs', the native HiGHS engine, which accepts the same models as 'lp' and is the one to use for them.</result>
+                <comment>The engine is decided at creation, since variables and constraints are built differently. Nothing else in a model changes: the same declarations, the same expressions and the same way of reading a solution work on every engine, and an engine that cannot represent a constraint says so when it is posted.</comment>
+                <seeAlso>
+                    <see id="use_strategy"/>
+                    <see id="use_restarts"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="problem p &lt;- problem(&quot;my_problem&quot;, &quot;lp&quot;);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="bc" id="count_var" name="count_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="value" position="1" type="int"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the number of variables of the first operand taking the value given as second operand. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="n_values"/>
+                    <see id="global_cardinality"/>
+                    <see id="among_values"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable nb_idle &lt;- count_var(slots, 0);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="lex_less_eq" name="lex_less_eq">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="first" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="second" position="1" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the first list is smaller than or equal to the second in the lexicographic order. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="lex_less"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="*" name="*">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the expression 'first times second'. A product of two variables is a non-linear constraint: it is propagated on the bounds only, so it deduces little until the domains have shrunk.
+Builds the expression 'variable times constant'.
+Builds the expression 'constant times variable'.</result>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(quantity * unit_price = cost);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="&lt;" name="&lt;">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the constant is strictly smaller than the expression.
+Builds the constraint stating that the expression is strictly smaller than the constant.
+Builds the constraint stating that the first operand is strictly smaller than the second.</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="arithm" name="arithm">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="op" position="1" type="string"/>
+                    <operand name="other" position="2" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="op" position="1" type="string"/>
+                    <operand name="value" position="2" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="var" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="op1" position="1" type="string"/>
+                    <operand name="other" position="2" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="op2" position="3" type="string"/>
+                    <operand name="value" position="4" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint 'first operator second', where the operator is given as a string among '=', '!=', '&lt;', '&lt;=', '&gt;' and '&gt;='.
+Builds the constraint 'variable operator value', where the operator is given as a string among '=', '!=', '&lt;', '&lt;=', '&gt;' and '&gt;='.
+Builds the constraint 'first op1 second op2 value', where op1 is an arithmetic operator ('+', '-', '*', '/') and op2 a relational one ('=', '!=', '&lt;', '&lt;=', '&gt;', '&gt;=').</result>
+                <seeAlso>
+                    <see id="arithm"/>
+                    <see id="scalar"/>
+                    <see id="member"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(arithm(x, &quot;&lt;&quot;, y));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="do post(arithm(x, &quot;&lt;=&quot;, 5));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="do post(arithm(x, &quot;-&quot;, y, &quot;!=&quot;, 3));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="mod" name="mod">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="int"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="k" position="0" type="int"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the expression 'variable modulo constant'.
+Builds the expression 'constant modulo variable'.
+Builds the expression 'first modulo second'.</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="all_equal" name="all_equal">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that all the variables of the list take the same value. Available on every engine: it amounts to a chain of equalities.</result>
+                <seeAlso>
+                    <see id="not_all_equal"/>
+                    <see id="all_different"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="&gt;=" name="&gt;=">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the constant is greater than or equal to the expression.
+Builds the constraint stating that the expression is greater than or equal to the constant.
+Builds the constraint stating that the first operand is greater than or equal to the second.</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="scalar" name="scalar">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="coeffs" position="1" type="gama.api.types.list.IList&lt;int&gt;"/>
+                    <operand name="op" position="2" type="string"/>
+                    <operand name="value" position="3" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="coeffs" position="1" type="gama.api.types.list.IList&lt;int&gt;"/>
+                    <operand name="op" position="2" type="string"/>
+                    <operand name="value" position="3" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint 'sum of the variables weighted by the coefficients, operator variable'.
+Builds the constraint 'sum of the variables weighted by the coefficients, operator value'. The two first operands must have the same size.</result>
+                <seeAlso>
+                    <see id="scalar"/>
+                    <see id="sum_var"/>
+                    <see id="arithm"/>
+                    <see id="knapsack"/>
+                    <see id="real_scalar"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(scalar(items, [3, 5, 2], &quot;&lt;=&quot;, 10));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="=" name="=">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the two operands are equal. On the variables of a problem, '=' expresses a constraint rather than a test: to check whether two GAML values designate the same variable, use 'same'.
+Builds the constraint stating that the constant equals the expression.
+Builds the constraint stating that the expression equals the constant.</result>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(x + y = 10);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+                <seeAlso>
+                    <see id="same"/>
+                    <see id="!="/>
+                    <see id="as_table"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="dh" id="element" name="element">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="value" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="table" position="1" type="gama.api.types.list.IList&lt;int&gt;"/>
+                    <operand name="index" position="2" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the first variable is equal to the value read in the table at the index given by the third operand. Indices start at 0. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="element_var"/>
+                    <see id="inverse_channeling"/>
+                    <see id="table"/>
+                    <see id="real_element"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do post(element(cost, [10, 4, 7], choice));" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaConstraint"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="-" name="-">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the expression 'minus the operand'.
+Builds the expression 'constant minus variable'.
+Builds the expression 'variable minus constant'.
+Builds the expression 'first minus second'.</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="at_most_n_values" name="at_most_n_values">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="nb" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the variables of the first operand take at most as many distinct values as the second operand. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="n_values"/>
+                    <see id="at_least_n_values"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="objective_value" name="objective_value">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Models.java" contentType="-13" returnType="float" type="-13">
+                    <operand name="solution" position="0" type="gama.plugin.solvers.GamaSolution"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns the value the objective of the problem takes in this solution, or nil if the problem carries no objective or no solution was found.</result>
+                <seeAlso>
+                    <see id="optimize"/>
+                    <see id="objective_of"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="write objective_value(best);" isExecutable="false" isTestOnly="false" test="false" type="float"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="reset" name="reset">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Brings the solver of this problem back to its initial state and returns the problem. Without it, searching the same problem twice resumes the previous search instead of starting a new one. Only available with the 'choco' engine.</result>
+                <comment>Variables, constraints and hints are kept; only the state of the search is undone.</comment>
+                <seeAlso>
+                    <see id="search"/>
+                    <see id="clear_hints"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do reset(p);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="search" name="search">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaSolution" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaSolution" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="within" position="1" type="float"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Runs the solver on a problem and returns the first solution it finds. The returned solution always exists as an object: its 'exists' attribute tells whether one was actually found.
+Runs the solver on a problem for at most the duration given as second operand, and returns the first solution it finds.</result>
+                <comment>The search stops as soon as the simulation is interrupted. Without a time budget, an unsatisfiable problem can keep the solver busy for a long time: prefer the two-operand form when the problem is not known to be easy.</comment>
+                <seeAlso>
+                    <see id="minimize"/>
+                    <see id="maximize"/>
+                    <see id="all_solutions"/>
+                    <see id="search"/>
+                    <see id="post"/>
+                    <see id="reset"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="solution sol &lt;- search(p);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaSolution"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="solution sol &lt;- search(p, 5 #s);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaSolution"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="sum_var" name="sum_var">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Variables.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Returns a new variable constrained to be equal to the sum of the variables given as operand. Available on every engine: the variable is declared and tied to its operands by a posted equality.</result>
+                <comment>Named sum_var rather than sum to avoid any ambiguity with the sum operator of the core library.</comment>
+                <seeAlso>
+                    <see id="min_var"/>
+                    <see id="max_var"/>
+                    <see id="scalar"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="pb_variable total &lt;- sum_var(loads);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaVariable"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="aa" id="/" name="/">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="k" position="0" type="float"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="k" position="1" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Expressions.java" contentType="-13" returnType="gama.plugin.solvers.GamaVariable" type="-13">
+                    <operand name="a" position="0" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="b" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the expression 'constant divided by variable', as an euclidean division.
+Builds the expression 'variable divided by constant', as an euclidean division.
+Builds the expression 'first divided by second'. The division is euclidean, and the solver forbids a null divisor.</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="use_strategy" name="use_strategy">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Strategies.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                    <operand name="vars" position="2" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Strategies.java" contentType="-13" returnType="gama.plugin.solvers.GamaProblem" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="name" position="1" type="string"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Chooses how the solver branches, over the variables given as third operand only, and returns the problem. The remaining variables are handled by a default strategy appended behind, so the search stays complete. Only available with the 'choco' engine.
+Chooses how the solver branches, over every integer variable of the problem, and returns the problem. Accepted names: 'default', 'input_order_lb', 'input_order_ub', 'min_dom_lb', 'min_dom_ub', 'random', 'dom_over_w_deg', 'dom_over_w_deg_ref', 'activity_based', 'conflict_history', 'failure_rate', 'failure_length', 'pick_on_dom', 'round_robin', 'adaptive_round_robin'. Only available with the 'choco' engine.</result>
+                <comment>Restricting the branching to the real decisions is often the single most profitable setting. By default the solver also branches on the variables produced by sum_var, min_var and the like, and on the objective, although those are determined by the others and branching on them mostly wastes decisions.A strategy never changes which solutions exist, only the order and the speed at which they are found. The adaptive ones ('dom_over_w_deg_ref', 'conflict_history', 'activity_based') learn from failures during the search and are the usual first thing to try on a problem that does not converge.</comment>
+                <seeAlso>
+                    <see id="use_strategy"/>
+                    <see id="with_last_conflict"/>
+                    <see id="use_restarts"/>
+                    <see id="with_best_bound"/>
+                    <see id="problem"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="do use_strategy(p, &quot;dom_over_w_deg_ref&quot;, decisions);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="do use_strategy(p, &quot;dom_over_w_deg_ref&quot;);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaProblem"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="n_values" name="n_values">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Constraints.java" contentType="-13" returnType="gama.plugin.solvers.GamaConstraint" type="-13">
+                    <operand name="vars" position="0" type="gama.api.types.list.IList&lt;gama.plugin.solvers.GamaVariable&gt;"/>
+                    <operand name="nb" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Builds the constraint stating that the second operand is equal to the number of distinct values taken by the variables of the first. Only available with the 'choco' engine.</result>
+                <seeAlso>
+                    <see id="at_least_n_values"/>
+                    <see id="at_most_n_values"/>
+                    <see id="all_different"/>
+                    <see id="count_var"/>
+                </seeAlso>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="im" id="minimize" name="minimize">
+            <operatorCategories>
+                <category id="Constraint and linear solvers"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaSolution" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="objective" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                    <operand name="within" position="2" type="float"/>
+                </operands>
+                <operands class="gama/plugin/solvers/Searches.java" contentType="-13" returnType="gama.plugin.solvers.GamaSolution" type="-13">
+                    <operand name="problem" position="0" type="gama.plugin.solvers.GamaProblem"/>
+                    <operand name="objective" position="1" type="gama.plugin.solvers.GamaVariable"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>Runs the solver on a problem for at most the duration given as third operand, and returns the best solution found for the variable to minimise. Interrupting the search on a time budget returns the best solution found so far, which is not necessarily an optimum.
+Runs the solver on a problem and returns the solution giving the smallest value to the variable given as second operand. The solution is a proven optimum, unless the search was interrupted.</result>
+                <seeAlso>
+                    <see id="minimize"/>
+                    <see id="maximize"/>
+                    <see id="search"/>
+                    <see id="optimize"/>
+                    <see id="with_best_bound"/>
+                    <see id="hint_from"/>
+                </seeAlso>
+                <usagesExamples>
+                    <usage>
+                        <examples>
+                            <example code="solution best &lt;- minimize(p, total_cost, 20 #s);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaSolution"/>
+                        </examples>
+                    </usage>
+                    <usage>
+                        <examples>
+                            <example code="solution best &lt;- minimize(p, total_cost);" isExecutable="false" isTestOnly="false" test="false" type="gama.plugin.solvers.GamaSolution"/>
+                        </examples>
+                    </usage>
+                </usagesExamples>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="sz" id="solution" name="solution">
+            <operatorCategories>
+                <category id="Types-related operators"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="type"/>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama.plugin.solvers.GamaSolutionType" contentType="" returnType="solution" type="">
+                    <operand name="val" position="0" type="any"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>casts the operand in a solution object.</result>
+            </documentation>
+            <documentation>
+                <result>Returns the argument if it is a solution, nil otherwise</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="problem" name="problem">
+            <operatorCategories>
+                <category id="Types-related operators"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="type"/>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama.plugin.solvers.GamaProblemType" contentType="" returnType="problem" type="">
+                    <operand name="val" position="0" type="any"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>casts the operand in a problem object.</result>
+            </documentation>
+            <documentation>
+                <result>Returns the argument if it is already a problem; creates a new empty problem named after the argument otherwise</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="nr" id="pb_variable" name="pb_variable">
+            <operatorCategories>
+                <category id="Types-related operators"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="type"/>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama.plugin.solvers.GamaVariableType" contentType="" returnType="pb_variable" type="">
+                    <operand name="val" position="0" type="any"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>casts the operand in a pb_variable object.</result>
+            </documentation>
+            <documentation>
+                <result>Returns the argument if it is a variable of a problem, nil otherwise</result>
+            </documentation>
+        </operator>
+        <operator alphabetOrder="bc" id="constraint" name="constraint">
+            <operatorCategories>
+                <category id="Types-related operators"/>
+            </operatorCategories>
+            <concepts>
+                <concept id="type"/>
+                <concept id="optimization"/>
+            </concepts>
+            <combinaisonIO>
+                <operands class="gama.plugin.solvers.GamaConstraintType" contentType="" returnType="constraint" type="">
+                    <operand name="val" position="0" type="any"/>
+                </operands>
+            </combinaisonIO>
+            <documentation>
+                <result>casts the operand in a constraint object.</result>
+            </documentation>
+            <documentation>
+                <result>Returns the argument if it is a constraint, nil otherwise</result>
+            </documentation>
+        </operator>
+    </operators>
+    <skills/>
+    <architectures/>
+    <speciess/>
+    <insideStatementKinds/>
+    <insideStatementSymbols/>
+    <statementsKinds/>
+    <statements/>
+    <files/>
+    <types>
+        <type id="776004" kind="REGULAR" name="solution">
+            <concepts>
+                <concept id="type"/>
+                <concept id="optimization"/>
+            </concepts>
+        </type>
+        <type id="776001" kind="REGULAR" name="problem">
+            <concepts>
+                <concept id="type"/>
+                <concept id="optimization"/>
+            </concepts>
+        </type>
+        <type id="776002" kind="REGULAR" name="pb_variable">
+            <concepts>
+                <concept id="type"/>
+                <concept id="optimization"/>
+            </concepts>
+        </type>
+        <type id="776003" kind="REGULAR" name="constraint">
+            <concepts>
+                <concept id="type"/>
+                <concept id="optimization"/>
+            </concepts>
+        </type>
+    </types>
+</doc>

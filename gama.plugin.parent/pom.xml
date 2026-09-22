@@ -18,8 +18,8 @@
   </properties>
   <!-- ── Modules: add one entry per plugin/feature in this repo ── -->
   <modules>
-    <module>../gama.plugin.constraintprogramming</module>
-    <module>../gama.plugin.feature.constraintprogramming</module>
+    <module>../gama.plugin.solvers</module>
+    <module>../gama.plugin.feature.solvers</module>
     <module>../gama.plugin.p2updatesite</module>
   </modules>
   <repositories>
